@@ -9,6 +9,7 @@ Pre-requisitos:
  - Framework FastAPI.
 
 ## Anotações
+ - Instalar fastAPI `pip install "fastapi[standard]"`
  - Iniciar Programa Web: `fastapi dev main.py`
  - Encerrar Programa Web: precione ctrl+C no terminal.
 
@@ -18,6 +19,7 @@ Pre-requisitos:
  - Adicionar arquivo especifico: `git add meu-arquivo.py`
  - Salvar arquivos no git: `git commit -m "Meu comentario do que fiz aqui."`
  - Publicar arquivos no Github: `git push origin main`
+ - Puxar atualizações do GitHub: `git pull`
 
 ## Parte 1
 

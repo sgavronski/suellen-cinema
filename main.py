@@ -32,3 +32,16 @@ async def read(texto: str = ""):
 async def read2values(var1: str = "", var2: int = 0):
     soma = 10 + var2
     return "Exemplo de read de texto: " + var1 + " soma = " + str(soma)
+
+#Retorno texto qualquer
+@app.get ("/suellen")
+async def suellen():
+    return "Primeiro site do cinema"
+
+#soma de dois numeros
+@app.get ("/soma") #assinatura http
+async def soma (num1: int =0, num2: int = 0):
+    soma= num1 + num2
+    return f'Resultado da soma das variáveis {num1} e {num2}: {soma}'
+
+#cada assinatura corresponde a uma função
