@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 app = FastAPI()
 
 # Testa se o servidor web esta UP!
-@app.get("/")
+@app.get("/") #essa linha é um decorator. É uma linha de código que atribui uma funcionalidade pra função que está logo abaixo dele quando entrar no link
 async def root():
     return "Cinema Suellen UP!"
 
@@ -45,3 +45,12 @@ async def soma (num1: int =0, num2: int = 0):
     return f'Resultado da soma das variáveis {num1} e {num2}: {soma}'
 
 #cada assinatura corresponde a uma função
+
+@app.get('/teste')
+async def teste (nome: str, idade: int):
+    return f'Nome do cliente: {nome}, Idade: {idade} anos'
+
+@app.get ('/mult')
+async def mult (num1 : int, num2 : int):
+    mult = num1 * num2
+    return f'Multiplicação de {num1} por {num2}: {mult}'
