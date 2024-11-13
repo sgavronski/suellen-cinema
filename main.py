@@ -6,7 +6,7 @@ import classes
 
 
 app = FastAPI()
-app_database = Database()
+app_database = Database() #atribui ao app_database o database (classe)
 
 
 # Testa se o servidor web esta UP!
@@ -80,3 +80,6 @@ async def person(person: Person):
 async def people():
     people = app_database.get_all_person()
     return people
+
+#pergunta 1 = pq atribuir o Databse a uma variável e não usar Database direto?
+#pergunta 2 = pq retornar people no def people e não retornar direto o comando app.database.get_all_person?
