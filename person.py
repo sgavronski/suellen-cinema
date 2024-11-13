@@ -15,3 +15,13 @@ class Person(BaseModel):
 
     def get_ideal_weight(self):
         return self.height / self.weight
+'''
+class Person:
+    def __init__(self, name, last_name, age, gender, height, weight, language):
+        self.name = name
+        self.last_name = last_name
+        self.age = age
+        self.gender = gender
+        self.height = height
+        self.weight = weight
+        self.language = language'''

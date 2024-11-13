@@ -1,3 +1,4 @@
+import person
 from person import Person
 
 
@@ -14,6 +15,7 @@ def start():
     # person1 = dict(nome="Suellen", age=32, gender="F", height=1.76)
     # person2 = dict(nome=123, age="33", gender="M", height=1.66, language="Java")
 
+    #person3 = person.Person('Suellen','Gavronski',32,'Female',1.76,66,'Python')
     person3 = Person()
     person3.name = "Suellen"
     person3.last_name = "Gavronski"
