@@ -71,15 +71,41 @@ async def start():
     return classes.start()
 
 
-@app.get('/person')
+@app.post('/person')
 async def person(person: Person):
-    app_database.add_person(person)
-    return f'Person {person.name} saved!'
+    was_added = app_database.add_person(person)
+    if was_added:
+        return f'Person {person.name} saved!'
+    else:
+        return f'Person not saved! Name is null.'
+
+@app.get('/person')
+async def person(index: int):
+    people_size = app_database.people_size()
+    if people_size <= index:
+        return "Pessoa nao existe na lista."
+    else:
+        return app_database.get_person(index)
+
+@app.put('/person')
+async def person(person: Person):
+    was_updated = app_database.update_person(person)
+    if was_updated:
+        return f'Person {person.name} updated!'
+    else:
+        return f'Person not updated! Name is null or does not exist.'
+
+@app.delete('/person')
+async def person(index: int):
+    people_size = app_database.people_size()
+    if people_size <= index:
+        return "Pessoa nao existe na lista."
+    else:
+        app_database.delete_person(index)
+        return "Pessoa excluida."
 
 @app.get('/people')
 async def people():
-    people = app_database.get_all_person()
-    return people
+    return app_database.get_people()
 
-#pergunta 1 = pq atribuir o Databse a uma variável e não usar Database direto?
-#pergunta 2 = pq retornar people no def people e não retornar direto o comando app.database.get_all_person?
+

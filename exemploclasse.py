@@ -1,6 +1,7 @@
 #Classe para clientes na Netflix
 
 class Clientes:
+
     def __init__(self, nome, email, plano):
         self.nome = nome
         self.email = email
