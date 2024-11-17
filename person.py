@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 
 class Person(BaseModel):
+    cod_person: int | None = None
     name: str | None = None
     last_name: str | None = None
     age: int | None = None
@@ -25,3 +26,4 @@ class Person:
         self.height = height
         self.weight = weight
         self.language = language'''
+
