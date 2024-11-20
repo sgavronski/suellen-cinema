@@ -76,7 +76,23 @@ class Database:
             self.__people[i].last_name = person.last_name
             return True
 
-    #def update_film(self, filme: Filme) -> bool:
+    def update_film(self, filme: Filme) -> bool:
+
+        if self.__verify_film(filme):
+            return False
+        index = None
+        for i in range(0, len(self.__films)):
+            if filme.cod_filme == self.__films[i].cod_filme:
+                index = i
+                break
+        if index == None:
+            return False
+        else:
+            self.__films[i].titulo = filme.titulo
+            self.__films[i].valor = filme.valor
+            self.__films[i].ano = filme.ano
+            self.__films[i].genero = filme.genero
+            return True
 
     def delete_person(self, index: int):
         self.__people.pop(index)
@@ -95,13 +111,18 @@ class Database:
 
     def __verify_person(self, person: Person) -> bool:
         """
-        Se o nome da Pessoa for fazio retorna TRUE.
+        Se o nome da Pessoa for vazio retorna TRUE.
         """
-        #return person.name is None
-        if person.name == "":
+        validcode = 0
+        for i in range(0, len(self.__people)):
+            if self.__people[i].name == person.name:
+                validcode = 1
+
+        if validcode==1:
             return True
         else:
             return False
+
 
     def __verify_film(self, filme: Filme) -> bool:
         if filme.titulo == "":

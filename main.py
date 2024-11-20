@@ -90,6 +90,15 @@ async def person(person: Person):
     else:
         return f'Person not updated! Name is null or does not exist.'
 
+
+@app.put('/filme')
+async def filme(filme: Filme):
+    filmeatt = app_database.update_film(filme)
+    if filmeatt:
+        return f'Filme {filme.titulo} atualizado com sucesso'
+    else:
+        return "Filme não foi atualizado pois ou não possui título ou não foi encontrado"
+
 @app.delete('/person')
 async def person(index: int):
     people_size = app_database.people_size()
