@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class Person(BaseModel):
+class Pessoa(BaseModel):
     cod_person: int | None = None
     name: str | None = None
     last_name: str | None = None

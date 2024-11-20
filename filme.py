@@ -10,7 +10,7 @@ class Filme(BaseModel):
 
 '''
     {
-        "cod_filme": "1"
+        "cod_filme": "1",
         "titulo": "Harry Potter",
         "ano": "2003",
         "valor": "14",
