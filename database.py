@@ -8,8 +8,8 @@ from filme import Filme
 
 class Database:
 
-    __pessoas: List[Pessoa] = [] #criação de lista chamada __people
-    __filmes: List[Filme] = [] #criação de lista chamada __films
+    __pessoas: List[Pessoa] = []
+    __filmes: List[Filme] = []
     __locacoes: List[Locacao] = []
 
     def pessoa_size(self) -> int:
@@ -21,45 +21,68 @@ class Database:
     def films_size(self) -> int:
          return len(self.__filmes)
 
-    def add_pessoa(self, person: Pessoa) -> bool:
+    def add_pessoa(self, pessoa: Pessoa) -> bool:
         """
         adiciona(append) à lista __people o dado da pessoa (person)
         """
-        if self.__verify_person(person):
+        if self.__verifica_nome_pessoa(pessoa):
             print("Pessoa nao tem nome. Cancelar operacao")
             return False
 
-        self.__pessoas.append(person)
+        self.__pessoas.append(pessoa)
         return True
 
-    def add_filme(self, filme: Filme) -> bool:
-        if self.__verify_film(filme):
-            print("Não possível adicionar o filme pois está sem título")
+    def adicionar_filme(self, filme: Filme) -> bool:
+        if self.__verifica_titulo_filme(filme):
+            print("Não foi possível adicionar o filme pois está sem título")
             return False
+
+        if self.__verifica_codigo_filme(filme):
+            print ("Filme com código repetido ou nulo")
+            return False
+
         else:
             self.__filmes.append(filme)
             return True
 
 
-    def get_pessoa(self, index: int) -> Pessoa:
-        return self.__pessoas[index]
-    #self= database; retorna a pessoa que está na lista __people correspondente ao numero (index) pedido
+    def buscar_pessoa(self, id_pessoa: int) -> Pessoa | str:
+        pessoa = None
+        for p in self.__pessoas:
+            if p.id_pessoa == id_pessoa:
+                pessoa = p
+                return pessoa
+                break
 
-    def get_film(self,index: int) -> Filme:
-        return self.__filmes[index]
+        return f'O código de pessoa digitado não retornou nenhum resultado'
 
 
-    def update_pessoa(self, person: Pessoa) -> bool:
+    def buscar_filme(self, id_filme: int) -> Filme | str:
+        filme = None
+        for f in self.__filmes:
+            if f.id_filme == id_filme:
+                filme = f
+                return filme
+                break
+
+        return "Não foi encontrado nenhum filme com este código de identificação"
+
+
+    def atualizar_pessoa(self, pessoa: Pessoa) -> bool:
         """
         Atualiza os dados da pessoa (person)
         """
-        if self.__verify_person(person):
+        if self.__verifica_nome_pessoa(pessoa):
             print("Pessoa nao tem nome. Cancelar operacao")
+            return False
+
+        if self.__verifica_codigo_pessoa(pessoa):
+            print("Código inválido")
             return False
 
         index = None
         for i in range(0, len(self.__pessoas)):
-            if self.__pessoas[i].cod_person == person.cod_person:
+            if self.__pessoas[i].id_pessoa == pessoa.id_pessoa:
                 index = i
                 break
 
@@ -67,27 +90,25 @@ class Database:
             print("Pessoa nao existe. Cancelar operacao")
             return False
         else:
-            #self.__people.pop(index)
-            #self.add_person(person)
-            self.__pessoas[index].name = person.name
-            self.__pessoas[index].age = person.age
-            self.__pessoas[index].weight = person.weight
-            self.__pessoas[index].height = person.height
-            self.__pessoas[index].gender = person.gender
-            self.__pessoas[index].language = person.language
-            self.__pessoas[index].last_name = person.last_name
+            self.__pessoas[index].nome = pessoa.nome
+            self.__pessoas[index].idade = pessoa.idade
+            self.__pessoas[index].peso = pessoa.peso
+            self.__pessoas[index].altura = pessoa.altura
+            self.__pessoas[index].genero = pessoa.genero
+            self.__pessoas[index].idioma = pessoa.idioma
+            self.__pessoas[index].sobrenome = pessoa.sobrenome
             return True
 
-    def update_filme(self, filme: Filme) -> bool:
-
-        if self.__verify_film(filme):
+    def atualizar_filme(self, filme: Filme) -> bool:
+        if self.__verifica_titulo_filme(filme):
             return False
+
         index = None
         for i in range(0, len(self.__filmes)):
-            if filme.cod_filme == self.__filmes[i].cod_filme:
+            if filme.id_filme == self.__filmes[i].id_filme:
                 index = i
                 break
-        if index == None:
+        if index is None:
             return False
         else:
             self.__filmes[index].titulo = filme.titulo
@@ -96,11 +117,23 @@ class Database:
             self.__filmes[index].genero = filme.genero
             return True
 
-    def delete_pessoa(self, index: int):
-        self.__pessoas.pop(index)
+    def deletar_pessoa(self, id_pessoa: int) -> bool:
+        for p in self.__pessoas:
+            if p.id_pessoa == id_pessoa:
+                print(id_pessoa)
+                self.__pessoas.remove(p)
+                return True
 
-    def delete_film(self, index: int):
-        self.__filmes.pop(index)
+        return False
+
+    def deletar_filme(self, id_filme: int) -> bool:
+        for f in self.__filmes:
+            if f.id_filme == id_filme:
+                self.__filmes.remove(f)
+                return True
+                break
+
+        return False
 
     def get_todas_pessoas(self) -> []:
         """
@@ -111,8 +144,8 @@ class Database:
     def get_todos_filmes(self) -> []:
         return self.__filmes
 
-    def add_locacao(self, cod_pessoa: int, cod_filmes: []) -> bool:
-        locacao = Locacao()
+    def add_locacao(self, cod_pessoa: int, cod_filmes: []) -> bool: #variáveis da classe locacao_dto
+        locacao = Locacao() #criação de uma variável que vai receber os dados de uma nova locação como um objeto da classe Locacao
 
         # Busca pessoa.
         if cod_pessoa is None or cod_pessoa <= 0:
@@ -120,37 +153,37 @@ class Database:
             return False
 
         pessoa = None
-        for p in self.__pessoas:
-            if p.cod_person == cod_pessoa:
-                pessoa = p
+        for p in self.__pessoas:            #cada p representa um objeto pessoa que vai ser checado na lista __pessoas
+            if p.id_pessoa == cod_pessoa:  #se o cod_pessoa digitado equivale ao código de uma pessoa da lista:
+                pessoa = p                  #o objeto pessoa p vai ser atribuído à variável pessoa e a busca para (break)
                 break
 
-        if pessoa is None:
+        if pessoa is None:                  #se nenhuma pessoa foi encontrada no for anterior, a variável pessoa estará vazia
             print("Pessoa nao encontrada")
             return False
 
-        locacao.pessoa = pessoa
-
+        locacao.pessoa = pessoa             #se foi encontrada uma pessoa, esse objeto pessoa será atribuído à variável
+                                            #pessoa na classe locação
         # Busca filmes
         if cod_filmes is None or len(cod_filmes) == 0:
             print("Nao tem filmes cadastrados para essa locacao.")
             return False
 
-        filmes = []
-        for cod in cod_filmes:
-            for filme in self.__filmes:
-                if filme.cod_filme == cod:
-                    filmes.append(filme)
+        filmes = []                         #uma pessoa pode alugar varios filmes, por isso cria-se uma lista
+        for cod in cod_filmes:              #a variavel cod_filmes também pode conter varios codigos dos filmes locados, então pra cada um desses códigos:
+            for filme in self.__filmes:     #pra cada filme presente na lista de filmes cadastrados
+                if filme.id_filme == cod:  #vai ser verificado se o codigo (cod) é o mesmo do código de algum filme cadastrado
+                    filmes.append(filme)    #e se for, o objeto filme vai ser adicionado à lista filmes
                     break
 
-        locacao.filmes = filmes
+        locacao.filmes = filmes             #toda a lista de filmes adicionada será atribuida à variação filmes da classe Locacao
 
         # Adiciona demais atributos
         locacao.id = len(self.__locacoes) + 1
         locacao.data = datetime.date.today()
 
-        self.__locacoes.append(locacao)
-        return True
+        self.__locacoes.append(locacao)    #a partir do comento que todos as variáveis são preenchidas com dados válidos, adiciona-se
+        return True                        #a locação à lista da locações e retorna True
 
     def get_locacao(self, id: int) -> Locacao:
         for locacao in self.__locacoes:
@@ -181,24 +214,44 @@ class Database:
     def get_todas_locacoes(self) -> List[Locacao]:
         return self.__locacoes
 
-    def __verify_person(self, person: Pessoa) -> bool:
+    def __verifica_nome_pessoa(self, pessoa: Pessoa) -> bool:
         """
         Se o nome da Pessoa for vazio retorna TRUE.
         """
-        validcode = 0
-        for i in range(0, len(self.__pessoas)):
-            if self.__pessoas[i].name == person.name:
-                validcode = 1
-
-        if validcode==1:
+        if pessoa.nome == "" or pessoa.nome is None:
             return True
         else:
             return False
 
+    def __verifica_codigo_pessoa(self, pessoa: Pessoa) -> bool:
+        for p in self.__pessoas:
+            if p.id_pessoa == pessoa.id_pessoa:
+                print("Não foi possível adicionar novo membro pois esse código de identificação já pertence a outra pessoa")
+                return True
+                break
 
-    def __verify_film(self, filme: Filme) -> bool:
-        if filme.titulo == "":
+        if pessoa.id_pessoa is None:
+            print("Pessoa sem código")
+            return True
+
+        return False
+
+    def __verifica_titulo_filme(self, filme: Filme) -> bool:
+        if filme.titulo == "" or filme.titulo is None:
             return True
         else:
             return False
+
+    def __verifica_codigo_filme(self, filme: Filme) -> bool:
+        for f in self.__filmes:
+            if f.id_filme == filme.id_filme:
+                print("Código repetido")
+                return True
+                break
+
+        if filme.id_filme is None:
+            print ("Filme sem código")
+            return True
+
+        return False
 

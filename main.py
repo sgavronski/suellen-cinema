@@ -27,57 +27,26 @@ async def html():
     return HTMLResponse(content=html, status_code=200)
 
 
-# Exemplo output\imprimindo text.
-@app.get("/print")
-async def print():
-    return "Exemplo de print de texto."
-
-
-# Exemplo input\lendo text.
-@app.get("/read")
-async def read(texto: str = ""):
-    return "Exemplo de read de texto: " + texto
-
-
-#soma de dois numeros
-@app.get ("/soma") #assinatura http
-async def soma (num1: int =0, num2: int = 0):
-    soma= num1 + num2
-    return f'Resultado da soma das variáveis {num1} e {num2}: {soma}'
-
-
-#cada assinatura corresponde a uma função
-@app.get('/teste')
-async def teste (nome: str, idade: int):
-    return f'Nome do cliente: {nome}, Idade: {idade} anos'
-
-
-@app.get('/mult')
-async def mult (num1 : int, num2 : int):
-    mult = num1 * num2
-    return f'Multiplicação de {num1} por {num2}: {mult}'
-
-
 @app.post('/pessoa')
 async def pessoa(pessoa: Pessoa):
     adicionado = app_database.add_pessoa(pessoa)
     if adicionado:
-        return f'pessoa {pessoa.name} salva!'
+        return f'Cadastro de {pessoa.nome} salvo!'
     else:
-        return f'pessoa nao salva! Nome e nulo.'
+        return f'Cadastro não salvo! Nome nulo ou código de identificação nulo ou repetido.'
 
 
 @app.post('/filme')
 async def filme(filme: Filme):
-    if app_database.add_filme(filme):
-        return f'Filme {filme.titulo} adicionado com sucesso'
+    if app_database.adicionar_filme(filme):
+        return f'Cadastro do filme {filme.titulo} adicionado com sucesso.'
     else:
-        return "Filme não adicionado pois não possui título"
+        return "Filme não adicionado pois não possui título ou código inválido/nulo ou repetido"
 
 
 @app.post('/locacao')
-async def locacao(locacao_dto: Locacao_Dto):
-    adicionado = app_database.add_locacao(locacao_dto.cod_pessoa, locacao_dto.cod_filmes)
+async def locacao(locacao_dto: Locacao_Dto): #criação de variável do tipo classe Locacao_dto
+    adicionado = app_database.add_locacao(locacao_dto.cod_pessoa, locacao_dto.cod_filmes) #a função add_locacao recebe 2 variaveis: cod_pessoa e cod_filmes da classe Locacao_dto
     if adicionado:
         return f'Locacao {locacao.id} adicionado com sucesso'
 
@@ -85,21 +54,13 @@ async def locacao(locacao_dto: Locacao_Dto):
 
 
 @app.get('/pessoa')
-async def pessoa(index: int):
-    pessoa_size = app_database.pessoa_size()
-    if pessoa_size <= index:
-        return "Pessoa nao existe na lista."
-    else:
-        return app_database.get_pessoa(index)
+async def pessoa(id_pessoa: int):
+    return app_database.buscar_pessoa(id_pessoa)
 
 
 @app.get('/filme')
-async def filme(index: int):
-    films_size = app_database.films_size()
-    if films_size <= index:
-        return "Filme não encontrado"
-    else:
-        return app_database.get_film(index)
+async def filme(id_filme: int):
+    return app_database.buscar_filme(id_filme)
 
 
 @app.get('/locacao')
@@ -113,16 +74,16 @@ async def locacao(id: int):
 
 @app.put('/pessoa')
 async def pessoa(pessoa: Pessoa):
-    atualizado = app_database.update_pessoa(pessoa)
+    atualizado = app_database.atualizar_pessoa(pessoa)
     if atualizado:
-        return f'Pessoa {pessoa.name} atualizada!'
+        return f'Pessoa {pessoa.nome} atualizada!'
     else:
-        return f'Pessoa nao atualizada! Codigo nao existe.'
+        return f'Pessoa nao atualizada! Erro no código ou nome'
 
 
 @app.put('/filme')
 async def filme(filme: Filme):
-    filmeatt = app_database.update_filme(filme)
+    filmeatt = app_database.atualizar_filme(filme)
     if filmeatt:
         return f'Filme {filme.titulo} atualizado com sucesso'
     else:
@@ -139,23 +100,21 @@ async def locacao(id: int, locacao: Locacao):
 
 
 @app.delete('/pessoa')
-async def pessoa(index: int):
-    pessoa_size = app_database.pessoa_size()
-    if pessoa_size <= index:
-        return "Pessoa nao existe na lista."
+async def pessoa(id_pessoa: int):
+    pessoa_deletada = app_database.deletar_pessoa(id_pessoa)
+    if pessoa_deletada:
+        return "Cadastro excluído."
     else:
-        app_database.delete_pessoa(index)
-        return "Pessoa excluida."
+        return "Cadastro não excluído. Código de identificação não encontrado"
 
 
 @app.delete('/filme')
-async def filme(index: int):
-    films_size = app_database.films_size()
-    if films_size <= index:
-        return "Filme não encontrado. Digite outro parâmetro"
+async def filme(id_filme: int):
+    filme_deletado = app_database.deletar_filme(id_filme)
+    if filme_deletado:
+        return "Filme excluído com sucesso"
     else:
-        app_database.delete_film(index)
-        return "Filme Excluído com sucesso"
+        return "Filme não excluído. Código de identificação não encontrado"
 
 @app.delete('/locacao')
 async def locacao(id: int):

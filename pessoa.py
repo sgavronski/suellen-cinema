@@ -2,21 +2,34 @@ from pydantic import BaseModel
 
 
 class Pessoa(BaseModel):
-    cod_person: int | None = None
-    name: str | None = None
-    last_name: str | None = None
-    age: int | None = None
-    gender: str | None = None
-    height: float | None = None
-    weight: float | None = None
-    language: str | None = None
+    id_pessoa: int | None = None
+    nome: str | None = None
+    sobrenome: str | None = None
+    idade: int | None = None
+    genero: str | None = None
+    altura: float | None = None
+    peso: float | None = None
+    idioma: str | None = None
 
     def print_full_name(self):
-        return f"{self.name} {self.last_name}"
+        return f"{self.nome} {self.sobrenome}"
 
     def get_ideal_weight(self):
-        return self.height / self.weight
+        return self.altura / self.peso
 '''
+Exemplo objeto:
+{
+	"id_pessoa":1,
+	"nome":"Suellen",
+    "sobrenome":"Gavronski",
+    "idade":"32",
+    "genero": "F",
+    "altura": "1.76",
+    "peso": "67",
+    "idioma": "Python"
+}
+
+
 class Person:
     def __init__(self, name, last_name, age, gender, height, weight, language):
         self.name = name
