@@ -1,5 +1,13 @@
+from pydantic import BaseModel
+from typing import List
 
-class Pagamento():
+
+class Debitos(BaseModel):
+    id_pessoa: int | None = None
+    debito_locacao: List | None = None
+
+
+
     # Pessoa
     # Locacao
     # Valor

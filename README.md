@@ -12,7 +12,7 @@ Pre-requisitos:
  - Instalar fastAPI `pip install "fastapi[standard]"`
  - Iniciar Programa Web: `fastapi dev main.py`
  - Encerrar Programa Web: precione ctrl+C no terminal.
- - Iniciar Programa Web (Debug): Licar no botão verde do inseto (debug) com a classe `main.py` selecionada no PyCharm.
+ - Iniciar Programa Web (Debug): Clicar no botão verde do inseto (debug) com a classe `main.py` selecionada no PyCharm.
 
 ## Operações GIT
  - Verificar status dos arquivos: `git status`

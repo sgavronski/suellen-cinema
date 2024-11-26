@@ -1,8 +1,11 @@
+from contextlib import nullcontext
+
 import uvicorn
+from dns.name import empty
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse
-
+from typing import List
 from locacao import Locacao
 from locacao_dto import Locacao_Dto
 from pessoa import Pessoa
@@ -43,14 +46,20 @@ async def filme(filme: Filme):
     else:
         return "Filme não adicionado pois não possui título ou código inválido/nulo ou repetido"
 
+'''@app.post('/locacao2')
+async def locacao(cod_pessoa: int, cod_filmes: List[int] = Query(None)):
+    return {
+        "cod_pessoa": cod_pessoa,
+        "cod_filmes": cod_filmes
+    }'''
 
 @app.post('/locacao')
-async def locacao(locacao_dto: Locacao_Dto): #criação de variável do tipo classe Locacao_dto
-    adicionado = app_database.add_locacao(locacao_dto.cod_pessoa, locacao_dto.cod_filmes) #a função add_locacao recebe 2 variaveis: cod_pessoa e cod_filmes da classe Locacao_dto
-    if adicionado:
-        return f'Locacao {locacao.id} adicionado com sucesso'
-
-    return "Locacao não adicionado pois não possui Pessoa ou Filmes."
+async def locacao(cod_pessoa: int, cod_filmes: List[int] = Query(None)):
+    locacao_adicionada = app_database.adicionar_locacao(cod_pessoa, cod_filmes)
+    if locacao_adicionada:
+        return "Locação adicionada com sucesso"
+    else:
+        return "Locação não efetuada. Campos de identificação de pessoa ou filme incompletos"
 
 
 @app.get('/pessoa')
@@ -65,9 +74,9 @@ async def filme(id_filme: int):
 
 @app.get('/locacao')
 async def locacao(id: int):
-    locacao = app_database.get_locacao(id)
+    locacao = app_database.buscar_locacao(id)
     if locacao is None:
-        return "Locacao nao encontrada."
+        return "Locação não encontrada."
 
     return locacao
 
@@ -91,10 +100,24 @@ async def filme(filme: Filme):
 
 
 @app.put('/locacao')
-async def locacao(id: int, locacao: Locacao):
-    atualizado = app_database.update_locacao(id, locacao)
+async def locacao(id: str = Query(None), cod_pessoa: str = Query(None), cod_filmes: List[int] = Query(None)):
+    if id is None or id == "":
+        return "Falta id da locação"
+    elif cod_pessoa is None or cod_pessoa == "":
+        return "Falta codigo da pessoa"
+    elif cod_filmes is None or len(cod_filmes)==0:
+        return "Falta código de filme"
+    else:
+        id2 = int(id)
+        cod_pessoa2 = int(cod_pessoa)
+        cod_filmes2 = list(map(int,cod_filmes))
+        print(id2)
+        print(cod_pessoa2)
+        print(cod_filmes2)
+        atualizado = app_database.atualizar_locacao(id2, cod_pessoa2, cod_filmes2)
+
     if atualizado:
-        return f'Locacao {locacao.id} atualizado com sucesso'
+        return f'Locacao atualizado com sucesso'
     else:
         return "Locacao não foi atualizado pois não foi encontrado"
 

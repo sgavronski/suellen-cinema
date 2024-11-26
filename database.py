@@ -29,6 +29,10 @@ class Database:
             print("Pessoa nao tem nome. Cancelar operacao")
             return False
 
+        if self.__verifica_codigo_pessoa(pessoa):
+            print("Codigo nulo ou repetido")
+            return False
+
         self.__pessoas.append(pessoa)
         return True
 
@@ -144,13 +148,13 @@ class Database:
     def get_todos_filmes(self) -> []:
         return self.__filmes
 
-    def add_locacao(self, cod_pessoa: int, cod_filmes: []) -> bool: #variáveis da classe locacao_dto
+    def adicionar_locacao(self, cod_pessoa: int, cod_filmes: []) -> bool: #variáveis da classe locacao_dto
         locacao = Locacao() #criação de uma variável que vai receber os dados de uma nova locação como um objeto da classe Locacao
 
         # Busca pessoa.
-        if cod_pessoa is None or cod_pessoa <= 0:
-            print("Codigo de pessoa invalido.")
-            return False
+        #if pessoa is None or pessoa <= 0:
+         #   print("Codigo de pessoa invalido.")
+          #  return False
 
         pessoa = None
         for p in self.__pessoas:            #cada p representa um objeto pessoa que vai ser checado na lista __pessoas
@@ -166,7 +170,7 @@ class Database:
                                             #pessoa na classe locação
         # Busca filmes
         if cod_filmes is None or len(cod_filmes) == 0:
-            print("Nao tem filmes cadastrados para essa locacao.")
+            print("Não foram selecionados filmes para a locação")
             return False
 
         filmes = []                         #uma pessoa pode alugar varios filmes, por isso cria-se uma lista
@@ -182,10 +186,26 @@ class Database:
         locacao.id = len(self.__locacoes) + 1
         locacao.data = datetime.date.today()
 
+        #adicionar valores de cada filme
+        valoresfilmes = []
+        for cod in cod_filmes:
+            for f in self.__filmes:
+                if f.id_filme == cod:
+                    valoresfilmes.append(f.valor)
+        valorlocacao = sum(valoresfilmes)
+        locacao.valorlocacao = valorlocacao
+
+        for p in self.__pessoas:
+            if p.id_pessoa == cod_pessoa:
+                print(p.id_pessoa)
+                print(cod_pessoa)
+                print(valorlocacao)
+                p.debitos=valorlocacao
+
         self.__locacoes.append(locacao)    #a partir do comento que todos as variáveis são preenchidas com dados válidos, adiciona-se
         return True                        #a locação à lista da locações e retorna True
 
-    def get_locacao(self, id: int) -> Locacao:
+    def buscar_locacao(self, id: int) -> Locacao:
         for locacao in self.__locacoes:
             if locacao.id == id:
                 return locacao
@@ -193,18 +213,44 @@ class Database:
         print("Locacao nao encontrada")
         return None
 
-    def update_locacao(self, id: int, locacao: Locacao) -> bool:
-        locacao_encontrada = self.get_locacao(id)
+    def atualizar_locacao(self, id: int, cod_pessoa: int, cod_filmes: []) -> bool:
+        locacao_encontrada = self.buscar_locacao(id)
         if locacao_encontrada is None:
             return False
 
-        locacao_encontrada.pessoa = locacao.pessoa
-        locacao_encontrada.filmes = locacao.filmes
+        if cod_pessoa is None:
+            print("Pessoa não identificada")
+            return False
+
+        pessoa = None
+        for p in self.__pessoas:
+            if p.id_pessoa == cod_pessoa:
+                pessoa = p
+        if pessoa is None:
+            print("Código de pessoa não encontrada")
+            return False
+
+        if cod_filmes is None:
+            print("Sem código de filmes")
+            return False
+
+        filmes = []
+        for cod in cod_filmes:
+            for f in self.__filmes:
+                if f.id_filme == cod:
+                    filmes.append(f)
+        if filmes is None or len(filmes)==0:
+            print("Filmes não encontrados")
+            return False
+
+        locacao_encontrada.pessoa = pessoa
+
+        locacao_encontrada.filmes = filmes
 
         return True
 
     def delete_locacao(self, id: int) -> bool:
-        locacao_encontrada = self.get_locacao(id)
+        locacao_encontrada = self.buscar_locacao(id)
         if locacao_encontrada is None:
             return False
 
