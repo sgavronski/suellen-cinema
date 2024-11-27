@@ -100,22 +100,25 @@ async def filme(filme: Filme):
 
 
 @app.put('/locacao')
-async def locacao(id: str = Query(None), cod_pessoa: str = Query(None), cod_filmes: List[int] = Query(None)):
+async def locacao(id: str = Query(None), cod_pessoa: str = Query(None), cod_filmes: List[str] = Query(None)):
     if id is None or id == "":
         return "Falta id da locação"
     elif cod_pessoa is None or cod_pessoa == "":
         return "Falta codigo da pessoa"
-    elif cod_filmes is None or len(cod_filmes)==0:
+    elif cod_filmes is None:
         return "Falta código de filme"
-    else:
-        id2 = int(id)
-        cod_pessoa2 = int(cod_pessoa)
-        cod_filmes2 = list(map(int,cod_filmes))
-        print(id2)
-        print(cod_pessoa2)
-        print(cod_filmes2)
-        atualizado = app_database.atualizar_locacao(id2, cod_pessoa2, cod_filmes2)
 
+    id2 = int(id)
+    cod_pessoa2 = int(cod_pessoa)
+    cod_filmes2 = list(map(int,cod_filmes))
+    print(id2)
+    print(cod_pessoa2)
+    print(cod_filmes2)
+    qtsfilmes = len(cod_filmes2)
+    if qtsfilmes == 0:
+        return "Falta código de filme"
+
+    atualizado = app_database.atualizar_locacao(id2, cod_pessoa2, cod_filmes2)
     if atualizado:
         return f'Locacao atualizado com sucesso'
     else:
@@ -141,8 +144,8 @@ async def filme(id_filme: int):
 
 @app.delete('/locacao')
 async def locacao(id: int):
-    deletedo = app_database.delete_locacao(id)
-    if deletedo:
+    deletado = app_database.delete_locacao(id)
+    if deletado:
         return "Locacao Excluída com sucesso"
     else:
         return "Locacao não encontrado."

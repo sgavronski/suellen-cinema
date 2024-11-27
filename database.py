@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, datetime, timedelta
 from operator import index
 from typing import List
 from locacao import Locacao
@@ -179,12 +179,21 @@ class Database:
                 if filme.id_filme == cod:  #vai ser verificado se o codigo (cod) é o mesmo do código de algum filme cadastrado
                     filmes.append(filme)    #e se for, o objeto filme vai ser adicionado à lista filmes
                     break
+        print(f"lista de filmes:{filmes}")
+        if len(filmes) == 0:
+            print("Nenhum filme válido selecionado")
+            return False
 
         locacao.filmes = filmes             #toda a lista de filmes adicionada será atribuida à variação filmes da classe Locacao
 
         # Adiciona demais atributos
         locacao.id = len(self.__locacoes) + 1
-        locacao.data = datetime.date.today()
+        data_hoje = date.today()
+        data_formatada = data_hoje.strftime("%d/%m/%y")
+        locacao.data = data_formatada
+        data_limite = data_hoje + timedelta(days = 3)
+        data_limite_formatada = data_limite.strftime("%d/%m/%y")
+        locacao.data_limite_entrega = data_limite_formatada
 
         #adicionar valores de cada filme
         valoresfilmes = []
@@ -200,7 +209,7 @@ class Database:
                 print(p.id_pessoa)
                 print(cod_pessoa)
                 print(valorlocacao)
-                p.debitos=valorlocacao
+                p.debitos.append(valorlocacao)
 
         self.__locacoes.append(locacao)    #a partir do comento que todos as variáveis são preenchidas com dados válidos, adiciona-se
         return True                        #a locação à lista da locações e retorna True
@@ -222,6 +231,12 @@ class Database:
             print("Pessoa não identificada")
             return False
 
+        valoraserexcluido = locacao_encontrada.valorlocacao
+        print(valoraserexcluido)
+        idlocador = locacao_encontrada.pessoa.id_pessoa
+        print(idlocador)
+
+
         pessoa = None
         for p in self.__pessoas:
             if p.id_pessoa == cod_pessoa:
@@ -235,17 +250,26 @@ class Database:
             return False
 
         filmes = []
+        valoresfilmes = []
         for cod in cod_filmes:
             for f in self.__filmes:
                 if f.id_filme == cod:
                     filmes.append(f)
+                    valoresfilmes.append(f.valor)
+        valorlocacao = sum(valoresfilmes)
+        locacao_encontrada.valorlocacao = valorlocacao
+
         if filmes is None or len(filmes)==0:
             print("Filmes não encontrados")
             return False
 
         locacao_encontrada.pessoa = pessoa
-
         locacao_encontrada.filmes = filmes
+        for p in self.__pessoas:
+            if p.id_pessoa == idlocador:
+                p.debitos.remove(valoraserexcluido)
+            if p.id_pessoa == cod_pessoa:
+                p.debitos.append(locacao_encontrada.valorlocacao)
 
         return True
 
@@ -253,6 +277,15 @@ class Database:
         locacao_encontrada = self.buscar_locacao(id)
         if locacao_encontrada is None:
             return False
+
+        #exclui o débito do locador referente à locação que será excluída
+        valoraserexcluido = locacao_encontrada.valorlocacao
+        print(valoraserexcluido)
+        idlocador = locacao_encontrada.pessoa.id_pessoa
+        print(idlocador)
+        for p in self.__pessoas:
+            if p.id_pessoa == idlocador:
+                p.debitos.remove(valoraserexcluido)
 
         self.__locacoes.remove(locacao_encontrada)
         return True
