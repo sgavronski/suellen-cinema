@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
-from operator import index
 from typing import List
+from debito import Devolucao
 from locacao import Locacao
 from pessoa import Pessoa
 from filme import Filme
@@ -232,9 +232,9 @@ class Database:
             return False
 
         valoraserexcluido = locacao_encontrada.valorlocacao
-        print(valoraserexcluido)
+        print(f'Valor a ser excluido: {valoraserexcluido}')
         idlocador = locacao_encontrada.pessoa.id_pessoa
-        print(idlocador)
+        print(f'Id locador: {idlocador}')
 
 
         pessoa = None
@@ -267,9 +267,18 @@ class Database:
         locacao_encontrada.filmes = filmes
         for p in self.__pessoas:
             if p.id_pessoa == idlocador:
+                print(f'Debitos do locador antigo: {p.debitos}')
                 p.debitos.remove(valoraserexcluido)
+                print(f'Debitos do locador antigo apos a remoção: {p.debitos}')
             if p.id_pessoa == cod_pessoa:
-                p.debitos.append(locacao_encontrada.valorlocacao)
+                p.debitos.append(valorlocacao)
+
+        data_hoje = date.today()
+        data_formatada = data_hoje.strftime("%d/%m/%y")
+        locacao_encontrada.data = data_formatada
+        data_limite = data_hoje + timedelta(days = 3)
+        data_limite_formatada = data_limite.strftime("%d/%m/%y")
+        locacao_encontrada.data_limite_entrega = data_limite_formatada
 
         return True
 
@@ -292,6 +301,40 @@ class Database:
 
     def get_todas_locacoes(self) -> List[Locacao]:
         return self.__locacoes
+
+    def fazer_devolucao(self, id_locacao: int) -> bool:
+        devolucao = Devolucao()
+        locacao_encontrada = self.buscar_locacao(id_locacao)
+        if locacao_encontrada is None:
+            return False
+
+        multa = 0
+        for l in self.__locacoes:
+            if l.id == id_locacao:
+                devolucao.infos_locacao = l
+                dialimite = l.data_limite_entrega
+                print(dialimite)
+                datadevolucao = date.today()
+                datadevolucaoformatada = datadevolucao.strftime("%d/%m/%y")
+                print(datadevolucaoformatada)
+                diferencadias = datadevolucao - datadevolucao
+                print(diferencadias)
+                if diferencadias <= 0:
+                    multa = 0
+                    devolucao.multa = multa
+                else:
+                    multa = diferencadias * 3
+                    devolucao.multa = multa
+                print(devolucao.multa)
+                idlocador = l.pessoa
+                print(idlocador)
+
+        for p in self.__pessoas:
+            if p.id_pessoa == idlocador:
+                p.multas.append(multa)
+
+        return True
+
 
     def __verifica_nome_pessoa(self, pessoa: Pessoa) -> bool:
         """

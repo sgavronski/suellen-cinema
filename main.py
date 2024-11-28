@@ -1,13 +1,8 @@
-from contextlib import nullcontext
-
 import uvicorn
-from dns.name import empty
-
 from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse
 from typing import List
 from locacao import Locacao
-from locacao_dto import Locacao_Dto
 from pessoa import Pessoa
 from filme import Filme
 from database import Database
@@ -164,6 +159,13 @@ async def filmes():
 async def locacoes():
     return app_database.get_todas_locacoes()
 
+@app.post('/devolucao')
+async def devolucao(id_locacao: int):
+    dev_efetuada = app_database.fazer_devolucao(id_locacao)
+    if dev_efetuada:
+        return "Devolução efetuada"
+    else:
+        return "Devolução não efetuada"
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

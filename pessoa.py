@@ -12,6 +12,7 @@ class Pessoa(BaseModel):
     peso: float | None = None
     idioma: str | None = None
     debitos: List[float] | None = None
+    multas: List[float] | None = None
 
     def print_full_name(self):
         return f"{self.nome} {self.sobrenome}"
