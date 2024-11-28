@@ -189,10 +189,10 @@ class Database:
         # Adiciona demais atributos
         locacao.id = len(self.__locacoes) + 1
         data_hoje = date.today()
-        data_formatada = data_hoje.strftime("%d/%m/%y")
+        data_formatada = data_hoje.strftime("%d/%m/%Y")
         locacao.data = data_formatada
         data_limite = data_hoje + timedelta(days = 3)
-        data_limite_formatada = data_limite.strftime("%d/%m/%y")
+        data_limite_formatada = data_limite.strftime("%d/%m/%Y")
         locacao.data_limite_entrega = data_limite_formatada
 
         #adicionar valores de cada filme
@@ -210,6 +210,8 @@ class Database:
                 print(cod_pessoa)
                 print(valorlocacao)
                 p.debitos.append(valorlocacao)
+
+        locacao.status = "Em andamento"
 
         self.__locacoes.append(locacao)    #a partir do comento que todos as variáveis são preenchidas com dados válidos, adiciona-se
         return True                        #a locação à lista da locações e retorna True
@@ -229,6 +231,10 @@ class Database:
 
         if cod_pessoa is None:
             print("Pessoa não identificada")
+            return False
+
+        if locacao_encontrada.status == "Finalizado":
+            print ("Não é possível alterar a locação, pois já foi finalizada")
             return False
 
         valoraserexcluido = locacao_encontrada.valorlocacao
@@ -274,10 +280,10 @@ class Database:
                 p.debitos.append(valorlocacao)
 
         data_hoje = date.today()
-        data_formatada = data_hoje.strftime("%d/%m/%y")
+        data_formatada = data_hoje.strftime("%d/%m/%Y")
         locacao_encontrada.data = data_formatada
         data_limite = data_hoje + timedelta(days = 3)
-        data_limite_formatada = data_limite.strftime("%d/%m/%y")
+        data_limite_formatada = data_limite.strftime("%d/%m/%Y")
         locacao_encontrada.data_limite_entrega = data_limite_formatada
 
         return True
@@ -313,26 +319,29 @@ class Database:
             if l.id == id_locacao:
                 devolucao.infos_locacao = l
                 dialimite = l.data_limite_entrega
-                print(dialimite)
+                dialimiteformat = datetime.strptime(dialimite,"%d/%m/%Y")
+                x = dialimiteformat.date()
                 datadevolucao = date.today()
-                datadevolucaoformatada = datadevolucao.strftime("%d/%m/%y")
-                print(datadevolucaoformatada)
-                diferencadias = datadevolucao - datadevolucao
+                diferencadias = datadevolucao - x
                 print(diferencadias)
-                if diferencadias <= 0:
+                y = diferencadias.days
+                print(y)
+                if y <= 0:
                     multa = 0
                     devolucao.multa = multa
                 else:
                     multa = diferencadias * 3
                     devolucao.multa = multa
                 print(devolucao.multa)
-                idlocador = l.pessoa
+                idlocador = l.pessoa.id_pessoa
                 print(idlocador)
+                break
 
         for p in self.__pessoas:
             if p.id_pessoa == idlocador:
                 p.multas.append(multa)
 
+        locacao_encontrada.status = "Finalizado"
         return True
 
 

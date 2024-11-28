@@ -117,7 +117,7 @@ async def locacao(id: str = Query(None), cod_pessoa: str = Query(None), cod_film
     if atualizado:
         return f'Locacao atualizado com sucesso'
     else:
-        return "Locacao não foi atualizado pois não foi encontrado"
+        return "Locacao não foi atualizado pois não foi encontrada ou já foi finalizada"
 
 
 @app.delete('/pessoa')
