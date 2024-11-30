@@ -1,7 +1,8 @@
 from datetime import date, datetime, timedelta
 from typing import List
-from debito import Devolucao
+from devolucao import Devolucao
 from locacao import Locacao
+from pagamento import Pagamento
 from pessoa import Pessoa
 from filme import Filme
 
@@ -11,6 +12,8 @@ class Database:
     __pessoas: List[Pessoa] = []
     __filmes: List[Filme] = []
     __locacoes: List[Locacao] = []
+    __codigosdelocaçoes: List[int] = []
+    __codigosdepagamentos: List[int] = []
 
     def pessoa_size(self) -> int:
         """
@@ -186,8 +189,19 @@ class Database:
 
         locacao.filmes = filmes             #toda a lista de filmes adicionada será atribuida à variação filmes da classe Locacao
 
-        # Adiciona demais atributos
-        locacao.id = len(self.__locacoes) + 1
+        # Adiciona cod locação
+        qtdlocacoes = len(self.__locacoes)
+        if qtdlocacoes == 0:
+            locacao.id = 1
+            self.__codigosdelocaçoes.append(locacao.id)
+            print(self.__codigosdelocaçoes)
+        else:
+            locacao.id = (self.__codigosdelocaçoes[-1])+1
+            self.__codigosdelocaçoes.clear()
+            self.__codigosdelocaçoes.append(locacao.id)
+            print(self.__codigosdelocaçoes)
+
+        #adicona data da locação e data limite para devolução de forma formatada(em str)
         data_hoje = date.today()
         data_formatada = data_hoje.strftime("%d/%m/%Y")
         locacao.data = data_formatada
@@ -209,7 +223,9 @@ class Database:
                 print(p.id_pessoa)
                 print(cod_pessoa)
                 print(valorlocacao)
-                p.debitos.append(valorlocacao)
+                p.debitos_locacao.append(valorlocacao)
+                p.debitos_totais = sum(p.debitos_locacao)+sum(p.multas)
+
 
         locacao.status = "Em andamento"
 
@@ -273,11 +289,14 @@ class Database:
         locacao_encontrada.filmes = filmes
         for p in self.__pessoas:
             if p.id_pessoa == idlocador:
-                print(f'Debitos do locador antigo: {p.debitos}')
-                p.debitos.remove(valoraserexcluido)
-                print(f'Debitos do locador antigo apos a remoção: {p.debitos}')
+                print(f'Debitos do locador antigo: {p.debitos_locacao}')
+                p.debitos_locacao.remove(valoraserexcluido)
+                print(f'Debitos do locador antigo apos a remoção: {p.debitos_locacao}')
+                p.debitos_totais = sum(p.debitos_locacao) + sum(p.multas)
             if p.id_pessoa == cod_pessoa:
-                p.debitos.append(valorlocacao)
+                p.debitos_locacao.append(valorlocacao)
+                p.debitos_totais = sum(p.debitos_locacao) + sum(p.multas)
+
 
         data_hoje = date.today()
         data_formatada = data_hoje.strftime("%d/%m/%Y")
@@ -293,6 +312,10 @@ class Database:
         if locacao_encontrada is None:
             return False
 
+        if locacao_encontrada.status == "Finalizado":
+            print("Não é possível deletar a locação pois já foi finalizada")
+            return False
+
         #exclui o débito do locador referente à locação que será excluída
         valoraserexcluido = locacao_encontrada.valorlocacao
         print(valoraserexcluido)
@@ -300,7 +323,8 @@ class Database:
         print(idlocador)
         for p in self.__pessoas:
             if p.id_pessoa == idlocador:
-                p.debitos.remove(valoraserexcluido)
+                p.debitos_locacao.remove(valoraserexcluido)
+                p.debitos_totais = sum(p.debitos_locacao) + sum(p.multas)
 
         self.__locacoes.remove(locacao_encontrada)
         return True
@@ -308,41 +332,69 @@ class Database:
     def get_todas_locacoes(self) -> List[Locacao]:
         return self.__locacoes
 
-    def fazer_devolucao(self, id_locacao: int) -> bool:
+    def fazer_devolucao(self, id_locacao: int, datadevolucao: str) -> bool:
         devolucao = Devolucao()
         locacao_encontrada = self.buscar_locacao(id_locacao)
         if locacao_encontrada is None:
             return False
 
-        multa = 0
+        multa: int
+        z: int
         for l in self.__locacoes:
             if l.id == id_locacao:
                 devolucao.infos_locacao = l
                 dialimite = l.data_limite_entrega
                 dialimiteformat = datetime.strptime(dialimite,"%d/%m/%Y")
                 x = dialimiteformat.date()
-                datadevolucao = date.today()
-                diferencadias = datadevolucao - x
-                print(diferencadias)
-                y = diferencadias.days
-                print(y)
-                if y <= 0:
+                datadev = datetime.strptime(datadevolucao,"%d/%m/%Y")
+                y = datadev.date()
+                diferenca = y - x
+                z = diferenca.days
+                if z <= 0:
                     multa = 0
                     devolucao.multa = multa
                 else:
-                    multa = diferencadias * 3
+                    multa = z * 5
                     devolucao.multa = multa
-                print(devolucao.multa)
                 idlocador = l.pessoa.id_pessoa
-                print(idlocador)
                 break
 
         for p in self.__pessoas:
             if p.id_pessoa == idlocador:
                 p.multas.append(multa)
+                p.debitos_totais = sum(p.debitos_locacao) + sum(p.multas)
 
         locacao_encontrada.status = "Finalizado"
         return True
+
+    def efetuar_pagamento(self, id_pessoa: int, valor_pago: float) -> bool:
+        pagamento = Pagamento()
+
+        if len(self.__codigosdepagamentos) == 0:
+            pagamento.id_pagamento = 1
+            self.__codigosdepagamentos.append(pagamento.id_pagamento)
+        else:
+            pagamento.id_pagamento = self.__codigosdepagamentos[-1]
+            self.__codigosdepagamentos.clear()
+            self.__codigosdepagamentos.append(pagamento.id_pagamento)
+
+        pessoa = None
+        for p in self.__pessoas:
+            if p.id_pessoa == id_pessoa:
+                pessoa = p
+                pagamento.debitos = p.debitos_totais
+                pagamento.debitosrestantes = pagamento.debitos - valor_pago
+                data = date.today()
+                dataformat = datetime.strftime(data,"%d/%m/%Y")
+                pagamento.data = dataformat
+                p.debitos_totais = pagamento.debitosrestantes
+                return True
+
+
+        if pessoa is None:
+            print("Pessoa não encontrada")
+            return False
+
 
 
     def __verifica_nome_pessoa(self, pessoa: Pessoa) -> bool:
@@ -357,7 +409,7 @@ class Database:
     def __verifica_codigo_pessoa(self, pessoa: Pessoa) -> bool:
         for p in self.__pessoas:
             if p.id_pessoa == pessoa.id_pessoa:
-                print("Não foi possível adicionar novo membro pois esse código de identificação já pertence a outra pessoa")
+                print("Esse código de identificação já pertence a outra pessoa")
                 return True
                 break
 

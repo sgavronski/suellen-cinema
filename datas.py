@@ -10,8 +10,10 @@ print("Diferença de dias:", diferenca.days)
 
 
 hoje = date.today()
-data_limite = date(day=30, month=11, year=2024)
-atraso = hoje - data_limite
+data = input(str("Data devolução: "))
+datastrtodate = datetime.strptime(data, "%d/%m/%Y")
+print(datastrtodate)
+atraso = hoje - datastrtodate.date()
 print(atraso.days)
 
 '''datadevolucao = date.today()
