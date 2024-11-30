@@ -220,10 +220,12 @@ class Database:
 
         for p in self.__pessoas:
             if p.id_pessoa == cod_pessoa:
-                print(p.id_pessoa)
-                print(cod_pessoa)
-                print(valorlocacao)
-                p.debitos_locacao.append(valorlocacao)
+                if len(p.debitos_locacao) == 0:
+                    p.debitos_locacao.append(valorlocacao)
+                else:
+                    novovalor = p.debitos_locacao[0]+valorlocacao
+                    p.debitos_locacao.clear()
+                    p.debitos_locacao.append(novovalor)
                 p.debitos_totais = sum(p.debitos_locacao)+sum(p.multas)
 
 
@@ -290,11 +292,15 @@ class Database:
         for p in self.__pessoas:
             if p.id_pessoa == idlocador:
                 print(f'Debitos do locador antigo: {p.debitos_locacao}')
-                p.debitos_locacao.remove(valoraserexcluido)
+                novovalor = p.debitos_locacao[0]-valoraserexcluido
+                p.debitos_locacao.clear()
+                p.debitos_locacao.append(novovalor)
                 print(f'Debitos do locador antigo apos a remoção: {p.debitos_locacao}')
                 p.debitos_totais = sum(p.debitos_locacao) + sum(p.multas)
             if p.id_pessoa == cod_pessoa:
-                p.debitos_locacao.append(valorlocacao)
+                novovalor = p.debitos_locacao[0] + valorlocacao
+                p.debitos_locacao.clear()
+                p.debitos_locacao.append(novovalor)
                 p.debitos_totais = sum(p.debitos_locacao) + sum(p.multas)
 
 
@@ -318,12 +324,12 @@ class Database:
 
         #exclui o débito do locador referente à locação que será excluída
         valoraserexcluido = locacao_encontrada.valorlocacao
-        print(valoraserexcluido)
         idlocador = locacao_encontrada.pessoa.id_pessoa
-        print(idlocador)
         for p in self.__pessoas:
             if p.id_pessoa == idlocador:
-                p.debitos_locacao.remove(valoraserexcluido)
+                novovalor = p.debitos_locacao[0]-valoraserexcluido
+                p.debitos_locacao.clear()
+                p.debitos_locacao.append(novovalor)
                 p.debitos_totais = sum(p.debitos_locacao) + sum(p.multas)
 
         self.__locacoes.remove(locacao_encontrada)
