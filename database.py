@@ -1,5 +1,7 @@
 from datetime import date, datetime, timedelta
 from typing import List
+
+from datas import diferenca
 from devolucao import Devolucao
 from locacao import Locacao
 from pagamento import Pagamento
@@ -344,7 +346,7 @@ class Database:
         if locacao_encontrada is None:
             return False
 
-        multa: int
+        multa: int = 0
         z: int
         for l in self.__locacoes:
             if l.id == id_locacao:
@@ -358,16 +360,20 @@ class Database:
                 z = diferenca.days
                 if z <= 0:
                     multa = 0
-                    devolucao.multa = multa
                 else:
                     multa = z * 5
-                    devolucao.multa = multa
+                devolucao.multa = multa
                 idlocador = l.pessoa.id_pessoa
                 break
 
         for p in self.__pessoas:
             if p.id_pessoa == idlocador:
-                p.multas.append(multa)
+                if len(p.multas) == 0:
+                    p.multas.append(multa)
+                else:
+                    novovalor = p.multas[0]+multa
+                    p.multas.clear()
+                    p.multas.append(novovalor)
                 p.debitos_totais = sum(p.debitos_locacao) + sum(p.multas)
 
         locacao_encontrada.status = "Finalizado"
@@ -376,6 +382,7 @@ class Database:
     def efetuar_pagamento(self, id_pessoa: int, valor_pago: float) -> bool:
         pagamento = Pagamento()
 
+        #gerar codigo do pagamento
         if len(self.__codigosdepagamentos) == 0:
             pagamento.id_pagamento = 1
             self.__codigosdepagamentos.append(pagamento.id_pagamento)
@@ -388,20 +395,53 @@ class Database:
         for p in self.__pessoas:
             if p.id_pessoa == id_pessoa:
                 pessoa = p
-                pagamento.debitos = p.debitos_totais
-                pagamento.debitosrestantes = pagamento.debitos - valor_pago
-                data = date.today()
-                dataformat = datetime.strftime(data,"%d/%m/%Y")
-                pagamento.data = dataformat
-                p.debitos_totais = pagamento.debitosrestantes
-                return True
+                if len(p.debitos_locacao) > 0:
+                    if p.debitos_locacao[0] > 0:
+                        if p.debitos_locacao[0]>= valor_pago:
+                            novovalor = p.debitos_locacao[0]-valor_pago
+                            p.debitos_locacao.clear()
+                            p.debitos_locacao.append(novovalor)
+                        else:
+                            diferenca = valor_pago - p.debitos_locacao[0]
+                            p.debitos_locacao.clear()
+                            if len(p.multas) > 0:
+                                if p.multas[0] > diferenca:
+                                    novovalor = p.multas[0]-diferenca
+                                    p.multas.clear()
+                                    p.multas.append(novovalor)
+                                elif p.multas[0] == diferenca:
+                                    p.multas.clear()
+                                else:
+                                    valorcreditos = diferenca - p.multas[0]
+                                    p.multas.clear()
+                                    p.creditos = p.creditos + valorcreditos
+                            else:
+                                p.creditos = p.creditos + diferenca
+                elif len(p.debitos_locacao) == 0 and len(p.multas) > 0:
+                    if p.multas[0] > valor_pago:
+                        novovalor = p.multas[0] - valor_pago
+                        p.multas.clear()
+                        p.multas.append(novovalor)
+                    elif p.multas[0] == valor_pago:
+                        p.multas.clear()
+                    else:
+                        valorcreditos = valor_pago - p.multas[0]
+                        p.multas.clear()
+                        p.creditos = p.creditos + valorcreditos
+                        p.debitos_totais = 0
+                else:
+                    p.creditos = p.creditos + valor_pago
+                p.debitos_totais = sum(p.debitos_locacao)+sum(p.multas)
 
+        #data do pagamento
+        data = date.today()
+        dataformat = datetime.strftime(data,"%d/%m/%Y")
+        pagamento.data = dataformat
+        return True
 
         if pessoa is None:
             print("Pessoa não encontrada")
             return False
-
-
 
     def __verifica_nome_pessoa(self, pessoa: Pessoa) -> bool:
         """

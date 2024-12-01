@@ -9,14 +9,14 @@ diferenca = data1 - data2
 print("Diferença de dias:", diferenca.days)
 
 
-hoje = date.today()
+'''hoje = date.today()
 data = input(str("Data devolução: "))
 datastrtodate = datetime.strptime(data, "%d/%m/%Y")
 print(datastrtodate)
 atraso = hoje - datastrtodate.date()
 print(atraso.days)
 
-'''datadevolucao = date.today()
+datadevolucao = date.today()
 datadevolucaoformatada = datadevolucao.strftime("%d/%m/%Y")
 print(datadevolucaoformatada)
 data_limite = date.today()
@@ -42,3 +42,9 @@ dataformat = datetime.strptime(data,"%d/%m/%Y")
 print(dataformat.date())
 x = date.today()
 print(x)
+
+lista1 = []
+lista2 = []
+soma = sum(lista1)+sum(lista2)
+print(f'soma: {soma}')
+print(len(lista1))

@@ -14,6 +14,7 @@ class Pessoa(BaseModel):
     debitos_locacao: List[float] | None = None
     multas: List[float] | None = None
     debitos_totais: float | None = None
+    creditos: float | None = 0
 
     def print_full_name(self):
         return f"{self.nome} {self.sobrenome}"
