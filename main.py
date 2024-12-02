@@ -1,8 +1,8 @@
 import uvicorn
 
-from fastapi import FastAPI
+from typing import List
+from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse
-
 from locacao import Locacao
 from locacao_dto import Locacao_Dto
 from pessoa import Pessoa
@@ -12,7 +12,6 @@ from database import Database
 
 app = FastAPI()
 app_database = Database() #atribui ao app_database o database (classe)
-
 
 # Testa se o servidor web esta UP!
 @app.get("/") #essa linha é um decorator. É uma linha de código que atribui uma funcionalidade pra função que está logo abaixo dele quando entrar no link
@@ -97,6 +96,14 @@ async def locacao(id: int, locacao: Locacao):
         return f'Locacao {locacao.id} atualizado com sucesso'
     else:
         return "Locacao não foi atualizado pois não foi encontrado"
+
+
+@app.post('/locacao2')
+async def locacao(cod_pessoa: int, cod_filmes: List[int] = Query(None)):
+    return {
+        "cod_pessoa": cod_pessoa,
+        "cod_filmes": cod_filmes
+    }
 
 
 @app.delete('/pessoa')

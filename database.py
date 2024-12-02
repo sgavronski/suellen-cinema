@@ -1,16 +1,51 @@
+import mysql.connector
 import datetime
-from operator import index
 from typing import List
 from locacao import Locacao
 from pessoa import Pessoa
 from filme import Filme
 
 
+database_name = "pudim"
+
+
 class Database:
+
+    __database_connector = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="pudim1234"
+    )
 
     __pessoas: List[Pessoa] = []
     __filmes: List[Filme] = []
     __locacoes: List[Locacao] = []
+
+    def __init__(self):
+        mycursor = self.__database_connector.cursor()
+        mycursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
+
+        mycursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.pessoas ("
+                         f"id INT AUTO_INCREMENT PRIMARY KEY, "
+                         f"nome VARCHAR(255), "
+                         f"endereco VARCHAR(255))")
+
+        mycursor.execute(f"SELECT * FROM {database_name}.pessoas")
+        myresult = mycursor.fetchall()
+
+        if len(myresult) == 0:
+            sql = f"INSERT INTO {database_name}.pessoas (nome, endereco) VALUES (%s, %s)"
+
+            val = ("Suellen", "Rua Algusta 21 - Brazil")
+            mycursor.execute(sql, val)
+
+            val = ("Zell", "San Pietro 15 - Italy")
+            mycursor.execute(sql, val)
+
+        for x in myresult:
+            print(x)
+
+        self.__database_connector.commit()
 
     def pessoa_size(self) -> int:
         """
