@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 
 class Pessoa(BaseModel):
@@ -10,6 +11,10 @@ class Pessoa(BaseModel):
     altura: float | None = None
     peso: float | None = None
     idioma: str | None = None
+    debitos_locacao: List[float] | None = None
+    multas: List[float] | None = None
+    debitos_totais: float | None = None
+    creditos: float | None = 0
 
     def print_full_name(self):
         return f"{self.nome} {self.sobrenome}"
