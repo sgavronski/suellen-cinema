@@ -1,9 +1,7 @@
-from datetime import date, datetime, timedelta
 import mysql.connector
 import datetime
+from datetime import date, datetime, timedelta
 from typing import List
-
-from datas import diferenca
 from devolucao import Devolucao
 from locacao import Locacao
 from pagamento import Pagamento
@@ -16,11 +14,7 @@ database_name = "pudim"
 
 class Database:
 
-    __database_connector = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="pudim1234"
-    )
+    __database_connector = mysql.connector.connect(host="localhost", user="root", password="pudim1234")
 
     __pessoas: List[Pessoa] = []
     __filmes: List[Filme] = []
@@ -29,27 +23,27 @@ class Database:
     __codigosdepagamentos: List[int] = []
 
     def __init__(self):
-        mycursor = self.__database_connector.cursor()
-        mycursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
+        cursor = self.__database_connector.cursor()
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
 
-        mycursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.pessoas ("
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.pessoas ("
                          f"id INT AUTO_INCREMENT PRIMARY KEY, "
                          f"nome VARCHAR(255), "
                          f"endereco VARCHAR(255))")
 
-        mycursor.execute(f"SELECT * FROM {database_name}.pessoas")
-        myresult = mycursor.fetchall()
+        cursor.execute(f"SELECT * FROM {database_name}.pessoas")
+        result = cursor.fetchall()
 
-        if len(myresult) == 0:
+        if len(result) == 0:
             sql = f"INSERT INTO {database_name}.pessoas (nome, endereco) VALUES (%s, %s)"
 
             val = ("Suellen", "Rua Algusta 21 - Brazil")
-            mycursor.execute(sql, val)
+            cursor.execute(sql, val)
 
             val = ("Zell", "San Pietro 15 - Italy")
-            mycursor.execute(sql, val)
+            cursor.execute(sql, val)
 
-        for x in myresult:
+        for x in result:
             print(x)
 
         self.__database_connector.commit()

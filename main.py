@@ -3,7 +3,6 @@ import uvicorn
 from typing import List
 from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse
-from locacao import Locacao
 from pessoa import Pessoa
 from filme import Filme
 from database import Database
