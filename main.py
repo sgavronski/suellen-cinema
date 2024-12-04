@@ -159,20 +159,20 @@ async def locacoes():
     return app_database.get_todas_locacoes()
 
 @app.post('/devolucao')
-async def devolucao(id_locacao: int, datadevolucao: str):
-    dev_efetuada = app_database.fazer_devolucao(id_locacao, datadevolucao)
+async def devolucao(id_locacao: int, data_devolucao: str):
+    dev_efetuada = app_database.fazer_devolucao(id_locacao, data_devolucao)
     if dev_efetuada:
         return "Devolução efetuada"
     else:
         return "Devolução não efetuada"
 
 @app.post('/pagamento')
-async def pagamento (id_pessoa: int, valorpago: float):
-    pag_efetuado = app_database.efetuar_pagamento(id_pessoa, valorpago)
+async def pagamento (id_locacao: int, forma_pagamento: str, valorpago: float):
+    pag_efetuado = app_database.efetuar_pagamento(id_locacao, forma_pagamento, valorpago)
     if pag_efetuado:
         return "Pagamento efetuado"
     else:
-        return "Pagamento não concluído. Pessoa não encontrada ou erro no processamento do pagamento"
+        return "Pagamento não concluído. Locação não encontrada ou valor digitado maior que o débito ou pagamento nulo"
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

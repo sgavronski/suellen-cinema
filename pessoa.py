@@ -8,19 +8,6 @@ class Pessoa(BaseModel):
     sobrenome: str | None = None
     idade: int | None = None
     genero: str | None = None
-    altura: float | None = None
-    peso: float | None = None
-    idioma: str | None = None
-    debitos_locacao: List[float] | None = None
-    multas: List[float] | None = None
-    debitos_totais: float | None = None
-    creditos: float | None = 0
-
-    def print_full_name(self):
-        return f"{self.nome} {self.sobrenome}"
-
-    def get_ideal_weight(self):
-        return self.altura / self.peso
 '''
 Exemplo objeto:
 {

@@ -9,10 +9,17 @@ class Locacao(BaseModel):
     data: str | None = None
     pessoa: Pessoa | None = None
     filmes: List[Filme] | None = None
-    valorlocacao: float | None = None
+    valor_locacao: float | None = None
     data_limite_entrega: str | None = None
-    data_entrega: str | None = None
-    status: str | None = None
+    data_devolucao: str | None = None
+    multa: float | None = None
+    valor_pago: float | None = None
+    forma_pagamento: str | None = None
+    data_pagamento: str | None = None
+    status_pagamento: str | None = None
+    total_debitos: float | None = None
+    status_devolucao: str | None = None
+
 
 #explicação do que é from typing import List
 #No exemplo abaixo, é declarada uma variável lst que é do tipo Lista e que vai ter somente valores do tipo int
