@@ -8,6 +8,9 @@ class Pessoa(BaseModel):
     sobrenome: str | None = None
     idade: int | None = None
     genero: str | None = None
+    endereco: str | None = None
+    telefone: str | None = None
+
 '''
 Exemplo objeto:
 {
@@ -19,16 +22,4 @@ Exemplo objeto:
     "altura": "1.76",
     "peso": "67",
     "idioma": "Python"
-}
-
-
-class Person:
-    def __init__(self, name, last_name, age, gender, height, weight, language):
-        self.name = name
-        self.last_name = last_name
-        self.age = age
-        self.gender = gender
-        self.height = height
-        self.weight = weight
-        self.language = language'''
-
+}'''

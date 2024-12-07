@@ -10,7 +10,7 @@ database_name = "Locadora"
 
 class Database:
 
-    __database_connector = mysql.connector.connect(host="localhost", user="root", password="pudim1234")
+    mydb = mysql.connector.connect(host="localhost", user="root", password="pudim1234")
 
     __pessoas: List[Pessoa] = []
     __filmes: List[Filme] = []
@@ -18,31 +18,16 @@ class Database:
     __codigosdelocaçoes: List[int] = []
     __codigosdepagamentos: List[int] = []
 
-    def _init_(self):
-        cursor = self.__database_connector.cursor()
+    def init(self):
+        cursor = self.mydb.cursor()
+
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
-
         cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.pessoas ("
-                       f"id INT AUTO_INCREMENT PRIMARY KEY, "
-                       f"nome VARCHAR(255), "
-                       f"endereco VARCHAR(255))")
+                   f"id_pessoa INT AUTO_INCREMENT PRIMARY KEY, "
+                   f"nome VARCHAR(30), sobrenome VARCHAR(50),"
+                   f"idade INT, genero enum ('F','M'), endereco VARCHAR(70), telefone INT)")
 
-        cursor.execute(f"SELECT * FROM {database_name}.pessoas")
-        result = cursor.fetchall()
-
-        if len(result) == 0:
-            sql = f"INSERT INTO {database_name}.pessoas (nome, endereco) VALUES (%s, %s)"
-
-            val = ("Suellen", "Rua Algusta 21 - Brazil")
-            cursor.execute(sql, val)
-
-            val = ("Zell", "San Pietro 15 - Italy")
-            cursor.execute(sql, val)
-
-        for x in result:
-            print(x)
-
-        self.__database_connector.commit()
+        self.mydb.commit()
 
     def pessoa_size(self) -> int:
         return len(self.__pessoas)
@@ -55,12 +40,29 @@ class Database:
             print("Pessoa nao tem nome. Cancelar operacao")
             return False
 
-        if self.__verifica_codigo_pessoa(pessoa):
-            print("Codigo nulo ou repetido")
-            return False
-
         self.__pessoas.append(pessoa)
+
+        cursor = self.mydb.cursor()
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.pessoas ("
+                       f"id_pessoa INT AUTO_INCREMENT PRIMARY KEY, "
+                       f"nome VARCHAR(30), sobrenome VARCHAR(50),"
+                       f"idade INT, genero enum ('F','M'), endereco VARCHAR(70), telefone bigint(15))")
+        cursor.execute("alter table Locadora.pessoas modify column telefone varchar(13)")
+
+        nome = pessoa.nome
+        sobrenome = pessoa.sobrenome
+        idade = pessoa.idade
+        genero = pessoa.genero
+        endereco = pessoa.endereco
+        telefone = pessoa.telefone
+
+        com = f"INSERT INTO Locadora.pessoas (nome, sobrenome, idade, genero, endereco, telefone) VALUES (%s, %s, %s, %s, %s, %s)"
+        val = (nome,sobrenome,idade,genero,endereco,telefone)
+        cursor.execute(com,val)
+        self.mydb.commit()
         return True
+
 
     def adicionar_filme(self, filme: Filme) -> bool:
         if self.__verifica_titulo_filme(filme):
@@ -102,7 +104,22 @@ class Database:
         """
         Atualiza os dados da pessoa (person)
         """
+        id = pessoa.id_pessoa
+        nome = pessoa.nome
+        sobrenome = pessoa.sobrenome
+        idade = pessoa.idade
+        genero = pessoa.genero
+        endereco = pessoa.endereco
+        telefone = pessoa.telefone
 
+        cursor = self.mydb.cursor()
+        com = (f"UPDATE {database_name}.pessoas SET nome %s where id_pessoa = {id} limit 1")
+        val = (nome,)
+        cursor.execute(com,val)
+        self.mydb.commit()
+        return True
+
+        '''
         index = None
         for i in range(0, len(self.__pessoas)):
             if self.__pessoas[i].id_pessoa == pessoa.id_pessoa:
@@ -124,6 +141,7 @@ class Database:
             self.__pessoas[index].genero = pessoa.genero
             self.__pessoas[index].sobrenome = pessoa.sobrenome
             return True
+            '''
 
     def atualizar_filme(self, filme: Filme) -> bool:
         if self.__verifica_titulo_filme(filme):

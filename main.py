@@ -28,9 +28,9 @@ async def html():
 async def pessoa(pessoa: Pessoa):
     adicionado = app_database.add_pessoa(pessoa)
     if adicionado:
-        return f'Cadastro de {pessoa.nome} salvo!'
+        return f"Cadastro de {pessoa.nome} adicionado com sucesso"
     else:
-        return f'Cadastro não salvo! Nome nulo ou código de identificação nulo ou repetido.'
+        return "ERRO! Cadastro não realizado"
 
 
 @app.post('/filme')
