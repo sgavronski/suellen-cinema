@@ -79,7 +79,7 @@ async def locacao(id: int):
 async def pessoa(pessoa: Pessoa):
     atualizado = app_database.atualizar_pessoa(pessoa)
     if atualizado:
-        return f'Pessoa {pessoa.nome} atualizada!'
+        return f'Cadastro de {pessoa.nome} atualizado!'
     else:
         return f'Pessoa nao atualizada! Erro no código ou nome'
 

@@ -29,6 +29,6 @@ Pre-requisitos:
 
  - Instalar Python3
  - Instalar MariaDB
- - Instalar Insomina
+ - Instalar Insomnia
  - Criar projeto Python com FastAPI.
  - Criar um Endpoint Hello World.

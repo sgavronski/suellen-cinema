@@ -20,13 +20,7 @@ class Database:
 
     def init(self):
         cursor = self.mydb.cursor()
-
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.pessoas ("
-                   f"id_pessoa INT AUTO_INCREMENT PRIMARY KEY, "
-                   f"nome VARCHAR(30), sobrenome VARCHAR(50),"
-                   f"idade INT, genero enum ('F','M'), endereco VARCHAR(70), telefone INT)")
-
         self.mydb.commit()
 
     def pessoa_size(self) -> int:
@@ -47,8 +41,7 @@ class Database:
         cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.pessoas ("
                        f"id_pessoa INT AUTO_INCREMENT PRIMARY KEY, "
                        f"nome VARCHAR(30), sobrenome VARCHAR(50),"
-                       f"idade INT, genero enum ('F','M'), endereco VARCHAR(70), telefone bigint(15))")
-        cursor.execute("alter table Locadora.pessoas modify column telefone varchar(13)")
+                       f"idade INT, genero enum ('F','M'), endereco VARCHAR(70), telefone varchar(13))")
 
         nome = pessoa.nome
         sobrenome = pessoa.sobrenome
@@ -69,13 +62,22 @@ class Database:
             print("Não foi possível adicionar o filme pois está sem título")
             return False
 
-        if self.__verifica_codigo_filme(filme):
-            print ("Filme com código repetido ou nulo")
-            return False
+        cursor = self.mydb.cursor()
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.filmes (id_filme INT AUTO_INCREMENT PRIMARY KEY, "
+                        f"titulo VARCHAR(60), ano INT, valor FLOAT, genero VARCHAR(30))")
 
-        else:
-            self.__filmes.append(filme)
-            return True
+        titulo = filme.titulo
+        ano = filme.ano
+        valor = filme.valor
+        genero = filme.genero
+
+        sql = f"INSERT INTO Locadora.filmes (titulo, ano, valor, genero) VALUES (%s, %s, %s, %s)"
+        val = (titulo, ano, valor, genero)
+        cursor.execute(sql, val)
+        self.mydb.commit()
+
+        return True
 
 
     def buscar_pessoa(self, id_pessoa: int) -> Pessoa | str:
@@ -101,9 +103,10 @@ class Database:
 
 
     def atualizar_pessoa(self, pessoa: Pessoa) -> bool:
-        """
-        Atualiza os dados da pessoa (person)
-        """
+        if self.__verifica_nome_pessoa(pessoa):
+            return False
+
+
         id = pessoa.id_pessoa
         nome = pessoa.nome
         sobrenome = pessoa.sobrenome
@@ -113,71 +116,48 @@ class Database:
         telefone = pessoa.telefone
 
         cursor = self.mydb.cursor()
-        com = (f"UPDATE {database_name}.pessoas SET nome %s where id_pessoa = {id} limit 1")
-        val = (nome,)
-        cursor.execute(com,val)
+        sql = f'UPDATE {database_name}.pessoas SET nome = %s, sobrenome = %s, idade = %s, genero = %s, endereco = %s, telefone = %s where id_pessoa = %s'
+        val = nome, sobrenome, idade, genero, endereco, telefone, id
+        cursor.execute(sql,val)
         self.mydb.commit()
         return True
 
-        '''
-        index = None
-        for i in range(0, len(self.__pessoas)):
-            if self.__pessoas[i].id_pessoa == pessoa.id_pessoa:
-                index = i
-                break
-
-        if index is None:
-            print("Pessoa nao existe. Cancelar operacao")
-            return False
-        else:
-            self.__pessoas[index].nome = pessoa.nome
-            if self.__pessoas[index].nome is None:
-                print("Sem nome")
-                return False
-            if self.__pessoas[index].nome == "":
-                print("Não é possível fazer a alteração sem o nome")
-                return False
-            self.__pessoas[index].idade = pessoa.idade
-            self.__pessoas[index].genero = pessoa.genero
-            self.__pessoas[index].sobrenome = pessoa.sobrenome
-            return True
-            '''
 
     def atualizar_filme(self, filme: Filme) -> bool:
         if self.__verifica_titulo_filme(filme):
             return False
 
-        index = None
-        for i in range(0, len(self.__filmes)):
-            if filme.id_filme == self.__filmes[i].id_filme:
-                index = i
-                break
-        if index is None:
-            return False
-        else:
-            self.__filmes[index].titulo = filme.titulo
-            self.__filmes[index].valor = filme.valor
-            self.__filmes[index].ano = filme.ano
-            self.__filmes[index].genero = filme.genero
-            return True
+        id = filme.id_filme
+        titulo = filme.titulo
+        ano = filme.ano
+        valor = filme.valor
+        genero = filme.genero
+
+        cursor = self.mydb.cursor()
+        sql = f'UPDATE {database_name}.filmes SET titulo = %s, ano = %s, valor = %s, genero = %s where id_filme = %s'
+        val = titulo, ano, valor, genero, id
+        cursor.execute(sql, val)
+        self.mydb.commit()
+        return True
+
 
     def deletar_pessoa(self, id_pessoa: int) -> bool:
-        for p in self.__pessoas:
-            if p.id_pessoa == id_pessoa:
-                print(id_pessoa)
-                self.__pessoas.remove(p)
-                return True
-
-        return False
+        id = id_pessoa
+        cursor = self.mydb.cursor()
+        sql = f'DELETE FROM {database_name}.pessoas where id_pessoa = %s'
+        val = (id,)
+        cursor.execute(sql, val)
+        self.mydb.commit()
+        return True
 
     def deletar_filme(self, id_filme: int) -> bool:
-        for f in self.__filmes:
-            if f.id_filme == id_filme:
-                self.__filmes.remove(f)
-                return True
-                break
-
-        return False
+        id = id_filme
+        cursor = self.mydb.cursor()
+        sql = f'DELETE FROM {database_name}.filmes where id_filme = %s'
+        val = (id,)
+        cursor.execute(sql, val)
+        self.mydb.commit()
+        return True
 
     def get_todas_pessoas(self) -> []:
         """
@@ -449,16 +429,5 @@ class Database:
         else:
             return False
 
-    def __verifica_codigo_filme(self, filme: Filme) -> bool:
-        for f in self.__filmes:
-            if f.id_filme == filme.id_filme:
-                print("Código repetido")
-                return True
-                break
 
-        if filme.id_filme is None:
-            print ("Filme sem código")
-            return True
-
-        return False
 
