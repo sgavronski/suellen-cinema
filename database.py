@@ -5,6 +5,7 @@ from typing import List
 from locacao import Locacao
 from pessoa import Pessoa
 from filme import Filme
+import json
 
 database_name = "Locadora"
 
@@ -80,32 +81,46 @@ class Database:
         return True
 
 
-    def buscar_pessoa(self, id_pessoa: int) -> Pessoa | str:
-        pessoa = None
-        for p in self.__pessoas:
-            if p.id_pessoa == id_pessoa:
-                pessoa = p
-                return pessoa
-                break
+    def buscar_pessoa(self, id_pessoa: int):
+        id = id_pessoa
+        cursor = self.mydb.cursor()
+        sql = f"SELECT * FROM {database_name}.pessoas where id_pessoa = %s"
+        val = (id,)
+        cursor.execute(sql,val)
 
-        return f'O código de pessoa digitado não retornou nenhum resultado'
+        rows = cursor.fetchall()   #rows = linhas
+        print(rows)
+        columns = [col[0] for col in cursor.description]
+        print(columns)
+        data = [dict(zip(columns,row)) for row in rows]
+        print(data)
+        to_json = json.dumps(data, indent=1)
+        print(to_json)
+        self.mydb.commit()
+        return data
 
+    def buscar_filme(self, id_filme: int):
+        id = id_filme
+        cursor = self.mydb.cursor()
+        sql = f"SELECT * FROM {database_name}.filmes where id_filme = %s"
+        val = (id,)
+        cursor.execute(sql,val)
 
-    def buscar_filme(self, id_filme: int) -> Filme | str:
-        filme = None
-        for f in self.__filmes:
-            if f.id_filme == id_filme:
-                filme = f
-                return filme
-                break
-
-        return "Não foi encontrado nenhum filme com este código de identificação"
+        rows = cursor.fetchall()   #rows = linhas
+        print(rows)
+        columns = [col[0] for col in cursor.description]
+        print(columns)
+        data = [dict(zip(columns,row)) for row in rows]
+        print(data)
+        to_json = json.dumps(data, indent=1)
+        print(to_json)
+        self.mydb.commit()
+        return data
 
 
     def atualizar_pessoa(self, pessoa: Pessoa) -> bool:
         if self.__verifica_nome_pessoa(pessoa):
             return False
-
 
         id = pessoa.id_pessoa
         nome = pessoa.nome
@@ -163,10 +178,32 @@ class Database:
         """
         retorna todas as pessoas que estão na lista __people
         """
-        return self.__pessoas
+        cursor = self.mydb.cursor()
+        cursor.execute(f"SELECT * FROM {database_name}.pessoas")
+        rows = cursor.fetchall()  # rows = linhas
+        print(rows)
+        columns = [col[0] for col in cursor.description]
+        print(columns)
+        data = [dict(zip(columns, row)) for row in rows]
+        print(data)
+        to_json = json.dumps(data, indent=1)
+        print(to_json)
+        self.mydb.commit()
+        return data
 
     def get_todos_filmes(self) -> []:
-        return self.__filmes
+        cursor = self.mydb.cursor()
+        cursor.execute(f"SELECT * FROM {database_name}.filmes")
+        rows = cursor.fetchall()  # rows = linhas
+        print(rows)
+        columns = [col[0] for col in cursor.description]
+        print(columns)
+        data = [dict(zip(columns, row)) for row in rows]
+        print(data)
+        to_json = json.dumps(data, indent=1)
+        print(to_json)
+        self.mydb.commit()
+        return data
 
     def adicionar_locacao(self, cod_pessoa: int, cod_filmes: []) -> bool: #variáveis da classe locacao_dto
         locacao = Locacao() #criação de uma variável que vai receber os dados de uma nova locação como um objeto da classe Locacao
