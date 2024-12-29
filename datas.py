@@ -1,4 +1,3 @@
-from calendar import month
 from datetime import date, datetime, timedelta
 
 data1 = date.today()

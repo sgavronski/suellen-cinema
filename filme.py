@@ -10,12 +10,3 @@ class Filme(BaseModel):
     data_ultima_locacao: str | None = None
 
 
-'''
-    {
-        "id_filme": "1",
-        "titulo": "Harry Potter",
-        "ano": "2003",
-        "valor": "14",
-        "genero": "Fantasia"
-    }'''
-

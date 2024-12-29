@@ -11,7 +11,7 @@ database_name = "Locadora"
 
 class Database:
 
-    mydb = mysql.connector.connect(host="localhost", user="root", password="pudim1234")
+    mydb = mysql.connector.connect(host="localhost", user="root", password="pudim1234", database="Locadora")
 
     __pessoas: List[Pessoa] = []
     __filmes: List[Filme] = []
@@ -102,9 +102,7 @@ class Database:
     def buscar_filme(self, id_filme: int):
         id = id_filme
         cursor = self.mydb.cursor()
-        sql = f"SELECT * FROM {database_name}.filmes where id_filme = %s"
-        val = (id,)
-        cursor.execute(sql,val)
+        cursor.execute (f"SELECT * FROM {database_name}.filmes where id_filme = %s", (id,))
 
         rows = cursor.fetchall()   #rows = linhas
         print(rows)
@@ -205,8 +203,78 @@ class Database:
         self.mydb.commit()
         return data
 
-    def adicionar_locacao(self, cod_pessoa: int, cod_filmes: []) -> bool: #variáveis da classe locacao_dto
-        locacao = Locacao() #criação de uma variável que vai receber os dados de uma nova locação como um objeto da classe Locacao
+    #def adicionar_locacao(self, cod_pessoa: int, cod_filmes: []) -> bool: #variáveis da classe locacao_dto
+    def adicionar_locacao(self, cod_pessoa: int, cod_filmes: int) -> bool:
+        cursor = self.mydb.cursor()
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.locacao (id INT NOT NULL AUTO_INCREMENT, data DATE, pessoa INT,"
+                       "nome_locador VARCHAR(40), filmes INT, nome_filmes VARCHAR(40), valor_locacao FLOAT, "
+                       "data_limite_entrega DATE, data_devolucao DATE, multa FLOAT,"
+                       "valor_pago FLOAT, forma_pagamento VARCHAR(20), data_pagamento DATE, status_pagamento varchar(30),"
+                       "total_debitos FLOAT, status_devolucao VARCHAR(30), PRIMARY KEY (id), "
+                       "FOREIGN KEY (pessoa) references pessoas (id_pessoa), FOREIGN KEY (filmes) references filmes (id_filme))")
+        pessoa = cod_pessoa
+        filmes = cod_filmes
+        datahoje = date.today()
+        data_limite = datahoje + timedelta(days=3)
+        multa = 0
+        valor_pago = 0
+        status_pag = "Em débito"
+
+        cursor.execute (f"SELECT nome FROM pessoas WHERE id_pessoa = %s", (pessoa,))
+        resnomep = cursor.fetchone()
+
+    #PARA VARIOS FILMES (LISTA)
+
+        '''nomesfilmes = []
+
+        for f in filmes:
+            cursor.execute("SELECT titulo FROM filmes WHERE id_filme = %s", (f,))
+            nomef = cursor.fetchone()
+            nomesfilmes.append(nomef)
+
+        valoresfilmes = []
+        soma = 0
+
+        for f in filmes:
+            cursor.execute("SELECT valor FROM filmes WHERE id_filme = %s", (f,))
+            valorf = cursor.fetchone()
+            valoresfilmes.append(valorf)
+
+        for preco in valoresfilmes:
+            soma += sum(preco)
+
+        valorlocacao = soma
+        tot_debitos = multa + valorlocacao
+
+        sql = (f"INSERT INTO locacao (data,pessoa,filmes,nome_locador, nome_filmes, valor_locacao, "
+           f"data_limite_entrega, multa, valor_pago, status_pagamento, total_debitos)"
+           f" VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+        val = (datahoje, pessoa, filmes, resnomep[0], nomesfilmes, valorlocacao, data_limite, multa, valor_pago, status_pag,
+           tot_debitos)
+        cursor.execute(sql, val)'''
+
+    #PARA UM FILME (INT)
+
+        cursor.execute ("SELECT titulo FROM filmes WHERE id_filme = %s", (filmes,))
+        resnomef = cursor.fetchone()
+
+        cursor.execute ("SELECT valor FROM filmes WHERE id_filme = %s", (filmes,))
+        resprecof = cursor.fetchone()
+
+        tot_debitos = multa + resprecof[0]
+
+        sql = (f"INSERT INTO locacao (data,pessoa,filmes,nome_locador, nome_filmes, valor_locacao, "
+                f"data_limite_entrega, multa, valor_pago, status_pagamento, total_debitos)"
+                f" VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+        val = (datahoje, pessoa, filmes, resnomep[0], resnomef[0], resprecof[0], data_limite, multa, valor_pago, status_pag,
+             tot_debitos)
+        cursor.execute(sql, val)
+
+        self.mydb.commit()
+        return True
+
+
+        '''locacao = Locacao() #criação de uma variável que vai receber os dados de uma nova locação como um objeto da classe Locacao
 
         pessoa = None
         for p in self.__pessoas:            #cada p representa um objeto pessoa que vai ser checado na lista __pessoas
@@ -274,15 +342,22 @@ class Database:
         locacao.status_pagamento = "Em débito"
 
         self.__locacoes.append(locacao)    #a partir do comento que todos as variáveis são preenchidas com dados válidos, adiciona-se
-        return True                        #a locação à lista da locações e retorna True
+        return True                    #a locação à lista da locações e retorna True'''
 
     def buscar_locacao(self, id: int) -> Locacao:
-        for locacao in self.__locacoes:
-            if locacao.id == id:
-                return locacao
-
-        print("Locacao nao encontrada")
-        return None
+        id_locacao = id
+        cursor = self.mydb.cursor()
+        cursor.execute(f"SELECT * FROM locacao where id = %s", (id_locacao,))
+        rows = cursor.fetchall()  # rows = linhas
+        print(rows)
+        columns = [col[0] for col in cursor.description]
+        print(columns)
+        data = [dict(zip(columns, row)) for row in rows]
+        print(data)
+        to_json = json.dumps(data, indent=1)
+        print(to_json)
+        self.mydb.commit()
+        return data
 
     def atualizar_locacao(self, id: int, cod_pessoa: int, cod_filmes: []) -> bool:
         locacao_encontrada = self.buscar_locacao(id)
@@ -384,7 +459,51 @@ class Database:
         return self.__locacoes
 
     def fazer_devolucao(self, id_locacao: int, datadevolucao: str) -> bool:
-        locacao_encontrada = self.buscar_locacao(id_locacao)
+        cursor = self.mydb.cursor()
+
+        cursor.execute("SELECT * from locacao where id = %s", (id_locacao,))
+        resultado = cursor.fetchone()
+        if resultado:
+            print("Registro encontrado")
+        else:
+            print("Registro não encontrado")
+            return False
+
+        multa = 0
+        cursor.execute("SELECT data_limite_entrega from locacao where id = %s", (id_locacao,))
+        datalimite = cursor.fetchone()
+        lim = datalimite[0]
+        datadev = datetime.strptime(datadevolucao,"%d/%m/%Y")
+        dev = datadev.date()
+        print(lim)
+        print(dev)
+        diferenca = (dev-lim).days
+        print(diferenca)
+
+        if diferenca <= 0:
+            multa = 0
+        else:
+            multa = diferenca * 5
+
+        status = "Devolvido"
+
+        cursor.execute("SELECT total_debitos from locacao where id = %s", (id_locacao,))
+        deb = cursor.fetchone()
+        debtot = deb[0] + multa
+        if debtot == 0:
+            statuspag = "Pago"
+        else:
+            statuspag = "Em débito"
+
+
+        sql = "UPDATE locacao SET data_devolucao = %s, multa = %s, status_devolucao = %s, total_debitos = %s, status_pagamento = %s WHERE id = %s"
+        val = dev, multa, status, debtot, statuspag, id_locacao
+        cursor.execute(sql, val)
+        self.mydb.commit()
+
+        return True
+
+        '''locacao_encontrada = self.buscar_locacao(id_locacao)
         if locacao_encontrada is None:
             return False
 
@@ -410,10 +529,43 @@ class Database:
             locacao_encontrada.status_pagamento = "Em débito"
         else:
             locacao_encontrada.status_devolucao = "Devolvida"
-        return True
+        return True'''
 
     def efetuar_pagamento(self, id_locacao: int, forma_pagamento: str, valor_pago: float) -> bool:
-        for l in self.__locacoes:
+
+        cursor = self.mydb.cursor()
+
+        cursor.execute("SELECT * from locacao where id = %s", (id_locacao,))
+        resultado = cursor.fetchone()
+        if resultado:
+            print("Registro encontrado")
+        else:
+            print("Registro não encontrado")
+            return False
+
+        sql1 = "SELECT total_debitos FROM locacao WHERE id = %s"
+        val1 = id_locacao,
+        cursor.execute(sql1,val1)
+        debitos = cursor.fetchone()
+        debitospospag = debitos[0] - valor_pago
+
+        if debitospospag < 0:
+            return False
+
+        if debitospospag == 0:
+            statuspag = "Pago"
+        else:
+            statuspag = "Em débito"
+
+        datapag = date.today()
+
+        sql = "UPDATE locacao SET valor_pago = %s, forma_pagamento = %s, total_debitos = %s, status_pagamento = %s, data_pagamento = %s WHERE id = %s"
+        val = valor_pago,forma_pagamento,debitospospag,statuspag,datapag,id_locacao
+        cursor.execute(sql,val)
+        self.mydb.commit()
+        return True
+
+        '''for l in self.__locacoes:
             if l.id == id_locacao:
                 l.forma_pagamento = forma_pagamento
                 datapag = date.today()
@@ -435,7 +587,7 @@ class Database:
                         return False
 
         print("Código locação não encontrado")
-        return False
+        return False'''
 
 
     def __verifica_nome_pessoa(self, pessoa: Pessoa) -> bool:

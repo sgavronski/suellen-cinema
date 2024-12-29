@@ -40,15 +40,10 @@ async def filme(filme: Filme):
     else:
         return "Filme não adicionado pois não possui título ou código inválido/nulo ou repetido"
 
-'''@app.post('/locacao2')
-async def locacao(cod_pessoa: int, cod_filmes: List[int] = Query(None)):
-    return {
-        "cod_pessoa": cod_pessoa,
-        "cod_filmes": cod_filmes
-    }'''
 
 @app.post('/locacao')
-async def locacao(cod_pessoa: int, cod_filmes: List[int] = Query(None)):
+async def locacao(cod_pessoa: int, cod_filmes: int):
+#async def locacao(cod_pessoa: int, cod_filmes: List[int] = Query(None)):
     locacao_adicionada = app_database.adicionar_locacao(cod_pessoa, cod_filmes)
     if locacao_adicionada:
         return "Locação adicionada com sucesso"
@@ -68,11 +63,7 @@ async def filme(id_filme: int):
 
 @app.get('/locacao')
 async def locacao(id: int):
-    locacao = app_database.buscar_locacao(id)
-    if locacao is None:
-        return "Locação não encontrada."
-
-    return locacao
+    return app_database.buscar_locacao(id)
 
 
 @app.put('/pessoa')
