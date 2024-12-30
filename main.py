@@ -10,6 +10,7 @@ from database import Database
 
 app = FastAPI()
 app_database = Database() #atribui ao app_database o database (classe)
+app_database.init()
 
 # Testa se o servidor web esta UP!
 @app.get("/") #essa linha é um decorator. É uma linha de código que atribui uma funcionalidade pra função que está logo abaixo dele quando entrar no link
@@ -42,8 +43,8 @@ async def filme(filme: Filme):
 
 
 @app.post('/locacao')
-async def locacao(cod_pessoa: int, cod_filmes: int):
-#async def locacao(cod_pessoa: int, cod_filmes: List[int] = Query(None)):
+#async def locacao(cod_pessoa: int, cod_filmes: int):
+async def locacao(cod_pessoa: int, cod_filmes: List[int] = Query(None)):
     locacao_adicionada = app_database.adicionar_locacao(cod_pessoa, cod_filmes)
     if locacao_adicionada:
         return "Locação adicionada com sucesso"

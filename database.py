@@ -22,6 +22,25 @@ class Database:
     def init(self):
         cursor = self.mydb.cursor()
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
+
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.pessoas ("
+                       f"id_pessoa INT AUTO_INCREMENT PRIMARY KEY, "
+                       f"nome VARCHAR(30), sobrenome VARCHAR(50),"
+                       f"idade INT, genero enum ('F','M'), endereco VARCHAR(70), telefone varchar(13))")
+
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.filmes (id_filme INT AUTO_INCREMENT PRIMARY KEY, "
+                        f"titulo VARCHAR(60), ano INT, valor FLOAT, genero VARCHAR(30))")
+
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.locacao (id INT NOT NULL AUTO_INCREMENT, data DATE, "
+                       f"pessoa INT, nome_locador VARCHAR(40), filmes INT, nome_filmes VARCHAR(40), valor_locacao FLOAT, "
+                       "data_limite_entrega DATE, data_devolucao DATE, multa FLOAT, valor_pago FLOAT, "
+                       "forma_pagamento VARCHAR(20), data_pagamento DATE, status_pagamento varchar(30),"
+                       "total_debitos FLOAT, status_devolucao VARCHAR(30), PRIMARY KEY (id), "
+                       "FOREIGN KEY (pessoa) references pessoas (id_pessoa), FOREIGN KEY (filmes) references filmes (id_filme))")
+
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS locacaofilme (id_locacao INT, id_filme INT, FOREIGN KEY (id_locacao) "
+                       f"references locacao (id), FOREIGN KEY (id_filme) references filmes (id_filme))")
+
         self.mydb.commit()
 
     def pessoa_size(self) -> int:
@@ -38,11 +57,6 @@ class Database:
         self.__pessoas.append(pessoa)
 
         cursor = self.mydb.cursor()
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.pessoas ("
-                       f"id_pessoa INT AUTO_INCREMENT PRIMARY KEY, "
-                       f"nome VARCHAR(30), sobrenome VARCHAR(50),"
-                       f"idade INT, genero enum ('F','M'), endereco VARCHAR(70), telefone varchar(13))")
 
         nome = pessoa.nome
         sobrenome = pessoa.sobrenome
@@ -64,9 +78,6 @@ class Database:
             return False
 
         cursor = self.mydb.cursor()
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.filmes (id_filme INT AUTO_INCREMENT PRIMARY KEY, "
-                        f"titulo VARCHAR(60), ano INT, valor FLOAT, genero VARCHAR(30))")
 
         titulo = filme.titulo
         ano = filme.ano
@@ -203,15 +214,10 @@ class Database:
         self.mydb.commit()
         return data
 
-    #def adicionar_locacao(self, cod_pessoa: int, cod_filmes: []) -> bool: #variáveis da classe locacao_dto
-    def adicionar_locacao(self, cod_pessoa: int, cod_filmes: int) -> bool:
+    def adicionar_locacao(self, cod_pessoa: int, cod_filmes: []) -> bool:
+    #def adicionar_locacao(self, cod_pessoa: int, cod_filmes: int) -> bool:
         cursor = self.mydb.cursor()
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.locacao (id INT NOT NULL AUTO_INCREMENT, data DATE, pessoa INT,"
-                       "nome_locador VARCHAR(40), filmes INT, nome_filmes VARCHAR(40), valor_locacao FLOAT, "
-                       "data_limite_entrega DATE, data_devolucao DATE, multa FLOAT,"
-                       "valor_pago FLOAT, forma_pagamento VARCHAR(20), data_pagamento DATE, status_pagamento varchar(30),"
-                       "total_debitos FLOAT, status_devolucao VARCHAR(30), PRIMARY KEY (id), "
-                       "FOREIGN KEY (pessoa) references pessoas (id_pessoa), FOREIGN KEY (filmes) references filmes (id_filme))")
+
         pessoa = cod_pessoa
         filmes = cod_filmes
         datahoje = date.today()
@@ -222,6 +228,17 @@ class Database:
 
         cursor.execute (f"SELECT nome FROM pessoas WHERE id_pessoa = %s", (pessoa,))
         resnomep = cursor.fetchone()
+
+        sql = (f"INSERT INTO locacao (data,pessoa,nome_locador, data_limite_entrega, multa, valor_pago, status_pagamento)"
+               f" VALUES (%s, %s, %s, %s, %s, %s, %s)")
+        val = (datahoje, pessoa, resnomep[0], data_limite, multa, valor_pago, status_pag)
+        cursor.execute(sql, val)
+
+        cursor.execute("SELECT id FROM locacao ORDER BY id DESC limit 1")
+        ultimoid = cursor.fetchone()
+
+        for f in filmes:
+            cursor.execute("INSERT INTO locacaofilme (id_locacao,id_filme) VALUES (%s,%s)", (ultimoid[0], f,))
 
     #PARA VARIOS FILMES (LISTA)
 
@@ -251,7 +268,7 @@ class Database:
            f" VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
         val = (datahoje, pessoa, filmes, resnomep[0], nomesfilmes, valorlocacao, data_limite, multa, valor_pago, status_pag,
            tot_debitos)
-        cursor.execute(sql, val)'''
+        cursor.execute(sql, val)
 
     #PARA UM FILME (INT)
 
@@ -268,81 +285,11 @@ class Database:
                 f" VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
         val = (datahoje, pessoa, filmes, resnomep[0], resnomef[0], resprecof[0], data_limite, multa, valor_pago, status_pag,
              tot_debitos)
-        cursor.execute(sql, val)
+        cursor.execute(sql, val)'''
 
         self.mydb.commit()
         return True
 
-
-        '''locacao = Locacao() #criação de uma variável que vai receber os dados de uma nova locação como um objeto da classe Locacao
-
-        pessoa = None
-        for p in self.__pessoas:            #cada p representa um objeto pessoa que vai ser checado na lista __pessoas
-            if p.id_pessoa == cod_pessoa:  #se o cod_pessoa digitado equivale ao código de uma pessoa da lista:
-                pessoa = p                  #o objeto pessoa p vai ser atribuído à variável pessoa e a busca para (break)
-                break
-
-        if pessoa is None:                  #se nenhuma pessoa foi encontrada no for anterior, a variável pessoa estará vazia
-            print("Pessoa nao encontrada")
-            return False
-
-        locacao.pessoa = pessoa             #se foi encontrada uma pessoa, esse objeto pessoa será atribuído à variável
-                                            #pessoa na classe locação
-        # Busca filmes
-        if cod_filmes is None or len(cod_filmes) == 0:
-            print("Não foram selecionados filmes para a locação")
-            return False
-
-        filmes = []                         #uma pessoa pode alugar varios filmes, por isso cria-se uma lista
-        for cod in cod_filmes:              #a variavel cod_filmes também pode conter varios codigos dos filmes locados, então pra cada um desses códigos:
-            for filme in self.__filmes:     #pra cada filme presente na lista de filmes cadastrados
-                if filme.id_filme == cod:  #vai ser verificado se o codigo (cod) é o mesmo do código de algum filme cadastrado
-                    filmes.append(filme)    #e se for, o objeto filme vai ser adicionado à lista filmes
-                    break
-        if len(filmes) == 0:
-            print("Nenhum filme válido selecionado")
-            return False
-
-        locacao.filmes = filmes             #toda a lista de filmes adicionada será atribuida à variação filmes da classe Locacao
-
-        # Adiciona cod locação
-        qtdlocacoes = len(self.__locacoes)
-        if qtdlocacoes == 0:
-            locacao.id = 1
-            self.__codigosdelocaçoes.append(locacao.id)
-        else:
-            locacao.id = (self.__codigosdelocaçoes[-1])+1
-            self.__codigosdelocaçoes.clear()
-            self.__codigosdelocaçoes.append(locacao.id)
-
-        #adiciona data da locação e data limite para devolução de forma formatada(em str)
-        data_hoje = date.today()
-        data_formatada = data_hoje.strftime("%d/%m/%Y")
-        locacao.data = data_formatada
-        data_limite = data_hoje + timedelta(days = 3)
-        data_limite_formatada = data_limite.strftime("%d/%m/%Y")
-        locacao.data_limite_entrega = data_limite_formatada
-
-        #adicionar valores de cada filme
-        valoresfilmes = []
-        for cod in cod_filmes:
-            for f in self.__filmes:
-                if f.id_filme == cod:
-                    valoresfilmes.append(f.valor)
-        valorlocacao = sum(valoresfilmes)
-        locacao.valor_locacao = valorlocacao
-
-        #adiciona valor de multa = 0 e total de debitos
-        locacao.multa = 0
-        locacao.total_debitos = locacao.valor_locacao + locacao.multa
-
-        locacao.valor_pago = 0
-        locacao.data_devolucao = ""
-        locacao.status_devolucao = "Em andamento"
-        locacao.status_pagamento = "Em débito"
-
-        self.__locacoes.append(locacao)    #a partir do comento que todos as variáveis são preenchidas com dados válidos, adiciona-se
-        return True                    #a locação à lista da locações e retorna True'''
 
     def buscar_locacao(self, id: int) -> Locacao:
         id_locacao = id
