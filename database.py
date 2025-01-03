@@ -19,7 +19,7 @@ class Database:
     __codigosdelocaçoes: List[int] = []
     __codigosdepagamentos: List[int] = []
 
-    def init(self):
+    def __init__(self):
         cursor = self.mydb.cursor()
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
 
@@ -95,36 +95,33 @@ class Database:
     def buscar_pessoa(self, id_pessoa: int):
         id = id_pessoa
         cursor = self.mydb.cursor()
-        sql = f"SELECT * FROM {database_name}.pessoas where id_pessoa = %s"
-        val = (id,)
-        cursor.execute(sql,val)
-
+        cursor.execute (f"SELECT * FROM pessoas where id_pessoa = %s", (id,))
         rows = cursor.fetchall()   #rows = linhas
         print(rows)
-        columns = [col[0] for col in cursor.description]
-        print(columns)
-        data = [dict(zip(columns,row)) for row in rows]
-        print(data)
-        to_json = json.dumps(data, indent=1)
-        print(to_json)
-        self.mydb.commit()
-        return data
+        pessoa = Pessoa()
+        for row in rows:
+            pessoa.id_pessoa = row[0]
+            pessoa.nome = row[1]
+            pessoa.sobrenome = row[2]
+            pessoa.idade = row[3]
+            pessoa.genero = row[4]
+            pessoa.endereco = row[5]
+            pessoa.telefone = row[6]
+        return pessoa
 
     def buscar_filme(self, id_filme: int):
         id = id_filme
         cursor = self.mydb.cursor()
         cursor.execute (f"SELECT * FROM {database_name}.filmes where id_filme = %s", (id,))
-
         rows = cursor.fetchall()   #rows = linhas
-        print(rows)
-        columns = [col[0] for col in cursor.description]
-        print(columns)
-        data = [dict(zip(columns,row)) for row in rows]
-        print(data)
-        to_json = json.dumps(data, indent=1)
-        print(to_json)
-        self.mydb.commit()
-        return data
+        filme = Filme()
+        for row in rows:
+            filme.id_filme = row[0]
+            filme.titulo = row[1]
+            filme.ano = row[2]
+            filme.valor = row[3]
+            filme.genero = row[4]
+        return filme
 
 
     def atualizar_pessoa(self, pessoa: Pessoa) -> bool:
@@ -177,42 +174,44 @@ class Database:
     def deletar_filme(self, id_filme: int) -> bool:
         id = id_filme
         cursor = self.mydb.cursor()
-        sql = f'DELETE FROM {database_name}.filmes where id_filme = %s'
-        val = (id,)
-        cursor.execute(sql, val)
+        cursor.execute (f'DELETE FROM {database_name}.filmes where id_filme = %s', (id,))
         self.mydb.commit()
         return True
 
     def get_todas_pessoas(self) -> []:
-        """
-        retorna todas as pessoas que estão na lista __people
-        """
         cursor = self.mydb.cursor()
-        cursor.execute(f"SELECT * FROM {database_name}.pessoas")
+        cursor.execute(f"SELECT * FROM pessoas")
         rows = cursor.fetchall()  # rows = linhas
-        print(rows)
-        columns = [col[0] for col in cursor.description]
-        print(columns)
-        data = [dict(zip(columns, row)) for row in rows]
-        print(data)
-        to_json = json.dumps(data, indent=1)
-        print(to_json)
-        self.mydb.commit()
-        return data
+        allpeople = []
+        for row in rows:
+            pessoa = Pessoa()
+            pessoa.id_pessoa = row[0]
+            pessoa.nome = row[1]
+            pessoa.sobrenome = row[2]
+            pessoa.idade = row[3]
+            pessoa.genero = row[4]
+            pessoa.endereco = row[5]
+            pessoa.telefone = row[6]
+            print(pessoa)
+            allpeople.append(pessoa)
+
+        return allpeople
 
     def get_todos_filmes(self) -> []:
         cursor = self.mydb.cursor()
-        cursor.execute(f"SELECT * FROM {database_name}.filmes")
+        cursor.execute(f"SELECT * FROM filmes")
         rows = cursor.fetchall()  # rows = linhas
-        print(rows)
-        columns = [col[0] for col in cursor.description]
-        print(columns)
-        data = [dict(zip(columns, row)) for row in rows]
-        print(data)
-        to_json = json.dumps(data, indent=1)
-        print(to_json)
-        self.mydb.commit()
-        return data
+        allmovies = []
+        for row in rows:
+            filme = Filme()
+            filme.id_filme = row[0]
+            filme.titulo = row[1]
+            filme.ano = row[2]
+            filme.valor = row[3]
+            filme.genero = row[4]
+            allmovies.append(filme)
+
+        return allmovies
 
     def adicionar_locacao(self, cod_pessoa: int, cod_filmes: []) -> bool:
     #def adicionar_locacao(self, cod_pessoa: int, cod_filmes: int) -> bool:

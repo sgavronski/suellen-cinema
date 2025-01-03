@@ -10,7 +10,7 @@ from database import Database
 
 app = FastAPI()
 app_database = Database() #atribui ao app_database o database (classe)
-app_database.init()
+
 
 # Testa se o servidor web esta UP!
 @app.get("/") #essa linha é um decorator. É uma linha de código que atribui uma funcionalidade pra função que está logo abaixo dele quando entrar no link
