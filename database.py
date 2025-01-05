@@ -246,57 +246,6 @@ class Database:
         totdeb = soma + multa
         cursor.execute("UPDATE locacao SET valor_locacao = %s, total_debitos = %s where id = %s", (soma, totdeb, ultimoid[0]))
 
-
-
-
-
-    #PARA VARIOS FILMES (LISTA)
-
-        '''nomesfilmes = []
-
-        for f in filmes:
-            cursor.execute("SELECT titulo FROM filmes WHERE id_filme = %s", (f,))
-            nomef = cursor.fetchone()
-            nomesfilmes.append(nomef)
-
-        valoresfilmes = []
-        soma = 0
-
-        for f in filmes:
-            cursor.execute("SELECT valor FROM filmes WHERE id_filme = %s", (f,))
-            valorf = cursor.fetchone()
-            valoresfilmes.append(valorf)
-
-        for preco in valoresfilmes:
-            soma += sum(preco)
-
-        valorlocacao = soma
-        tot_debitos = multa + valorlocacao
-
-        sql = (f"INSERT INTO locacao (data,pessoa,filmes,nome_locador, nome_filmes, valor_locacao, "
-           f"data_limite_entrega, multa, valor_pago, status_pagamento, total_debitos)"
-           f" VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
-        val = (datahoje, pessoa, filmes, resnomep[0], nomesfilmes, valorlocacao, data_limite, multa, valor_pago, status_pag,
-           tot_debitos)
-        cursor.execute(sql, val)
-
-    #PARA UM FILME (INT)
-
-        cursor.execute ("SELECT titulo FROM filmes WHERE id_filme = %s", (filmes,))
-        resnomef = cursor.fetchone()
-
-        cursor.execute ("SELECT valor FROM filmes WHERE id_filme = %s", (filmes,))
-        resprecof = cursor.fetchone()
-
-        tot_debitos = multa + resprecof[0]
-
-        sql = (f"INSERT INTO locacao (data,pessoa,filmes,nome_locador, nome_filmes, valor_locacao, "
-                f"data_limite_entrega, multa, valor_pago, status_pagamento, total_debitos)"
-                f" VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
-        val = (datahoje, pessoa, filmes, resnomep[0], resnomef[0], resprecof[0], data_limite, multa, valor_pago, status_pag,
-             tot_debitos)
-        cursor.execute(sql, val)'''
-
         self.mydb.commit()
         return True
 
@@ -441,7 +390,17 @@ class Database:
         return True
 
     def get_todas_locacoes(self) -> List[Locacao]:
-        return self.__locacoes
+        cursor = self.mydb.cursor()
+        cursor.execute("select * from locacao inner join locacaofilme on locacao.id = locacaofilme.id_locacao "
+                       "inner join filmes on filmes.id_filme = locacaofilme.id_filme "
+                       "inner join pessoas on pessoas.id_pessoa = locacao.pessoa order by id")
+        rows = cursor.fetchall()
+        print(rows)
+        qtdloc = len(rows)
+        print(qtdloc)
+        for row in range (0, qtdloc):
+
+        return None
 
     def fazer_devolucao(self, id_locacao: int, datadevolucao: str) -> bool:
         cursor = self.mydb.cursor()
@@ -542,8 +501,12 @@ class Database:
 
         datapag = date.today()
 
+        cursor.execute("SELECT valor_pago from locacao where id = %s", (id_locacao,))
+        valor_pago_anterior = cursor.fetchone()
+        valor_pago_atual = valor_pago_anterior[0] + valor_pago
+
         sql = "UPDATE locacao SET valor_pago = %s, forma_pagamento = %s, total_debitos = %s, status_pagamento = %s, data_pagamento = %s WHERE id = %s"
-        val = valor_pago,forma_pagamento,debitospospag,statuspag,datapag,id_locacao
+        val = valor_pago_atual,forma_pagamento,debitospospag,statuspag,datapag,id_locacao
         cursor.execute(sql,val)
         self.mydb.commit()
         return True
