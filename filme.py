@@ -7,6 +7,5 @@ class Filme(BaseModel):
     ano: int | None = None
     valor: float | None = None
     genero: str | None = None
-    data_ultima_locacao: str | None = None
 
 

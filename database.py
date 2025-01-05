@@ -32,7 +32,7 @@ class Database:
                         f"titulo VARCHAR(60), ano INT, valor FLOAT, genero VARCHAR(30))")
 
         cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.locacao (id INT NOT NULL AUTO_INCREMENT, data DATE, "
-                       f"pessoa INT, nome_locador VARCHAR(40), filmes INT, nome_filmes VARCHAR(40), valor_locacao FLOAT, "
+                       f"pessoa INT, filmes INT, valor_locacao FLOAT, "
                        "data_limite_entrega DATE, data_devolucao DATE, multa FLOAT, valor_pago FLOAT, "
                        "forma_pagamento VARCHAR(20), data_pagamento DATE, status_pagamento varchar(30),"
                        "total_debitos FLOAT, status_devolucao VARCHAR(30), PRIMARY KEY (id), "
@@ -236,8 +236,20 @@ class Database:
         cursor.execute("SELECT id FROM locacao ORDER BY id DESC limit 1")
         ultimoid = cursor.fetchone()
 
+        valores_filmes = []
+        soma = 0
         for f in filmes:
             cursor.execute("INSERT INTO locacaofilme (id_locacao,id_filme) VALUES (%s,%s)", (ultimoid[0], f,))
+            cursor.execute("SELECT valor FROM filmes where id_filme = %s", (f,))
+            valorf = cursor.fetchone()
+            valores_filmes.append(valorf)
+
+        for preco in valores_filmes:
+            soma += sum(preco)
+
+        cursor.execute("UPDATE locacao SET valor_locacao = %s where id = %s", (soma, ultimoid[0]))
+
+
 
     #PARA VARIOS FILMES (LISTA)
 
@@ -290,20 +302,48 @@ class Database:
         return True
 
 
-    def buscar_locacao(self, id: int) -> Locacao:
+    def buscar_locacao(self, id: int):
         id_locacao = id
         cursor = self.mydb.cursor()
-        cursor.execute(f"SELECT * FROM locacao where id = %s", (id_locacao,))
-        rows = cursor.fetchall()  # rows = linhas
-        print(rows)
-        columns = [col[0] for col in cursor.description]
-        print(columns)
-        data = [dict(zip(columns, row)) for row in rows]
-        print(data)
-        to_json = json.dumps(data, indent=1)
-        print(to_json)
-        self.mydb.commit()
-        return data
+        cursor.execute("select * from locacao inner join locacaofilme on locacao.id = locacaofilme.id_locacao "
+                       " inner join filmes on filmes.id_filme = locacaofilme.id_filme "
+                       "inner join pessoas on pessoas.id_pessoa = locacao.pessoa "
+                       "where locacao.id = %s", (id,))
+        rows = cursor.fetchall()
+        print(rows[0])
+        locacao = Locacao()
+        locacao.id = rows[0][0]
+        locacao.data = rows[0][1]
+        locacao.valor_locacao = rows[0][6]
+        locacao.data_limite_entrega = rows[0][7]
+        locacao.data_devolucao = rows[0][8]
+        locacao.multa = rows[0][9]
+        locacao.valor_pago = rows[0][10]
+        locacao.forma_pagamento = rows[0][11]
+        locacao.data_pagamento = rows[0][12]
+        locacao.status_pagamento = rows[0][13]
+        locacao.total_debitos = rows[0][14]
+        locacao.status_devolucao = rows[0][15]
+        pessoa = Pessoa()
+        pessoa.id_pessoa = rows[0][23]
+        pessoa.nome = rows[0][24]
+        pessoa.sobrenome = rows[0][25]
+        pessoa.idade = rows[0][26]
+        pessoa.genero = rows[0][27]
+        pessoa.endereco = rows[0][28]
+        pessoa.telefone = rows[0][29]
+        locacao.pessoa = pessoa
+        filmes = []
+        for row in rows:
+            filme = Filme()
+            filme.id_filme = row[18]
+            filme.titulo = row[19]
+            filme.ano = row[20]
+            filme.valor = row[21]
+            filme.genero = row[22]
+            filmes.append(filme)
+        locacao.filmes = filmes
+        return locacao
 
     def atualizar_locacao(self, id: int, cod_pessoa: int, cod_filmes: []) -> bool:
         locacao_encontrada = self.buscar_locacao(id)
