@@ -214,7 +214,6 @@ class Database:
         return allmovies
 
     def adicionar_locacao(self, cod_pessoa: int, cod_filmes: []) -> bool:
-    #def adicionar_locacao(self, cod_pessoa: int, cod_filmes: int) -> bool:
         cursor = self.mydb.cursor()
 
         pessoa = cod_pessoa
@@ -225,12 +224,9 @@ class Database:
         valor_pago = 0
         status_pag = "Em débito"
 
-        cursor.execute (f"SELECT nome FROM pessoas WHERE id_pessoa = %s", (pessoa,))
-        resnomep = cursor.fetchone()
-
-        sql = (f"INSERT INTO locacao (data,pessoa,nome_locador, data_limite_entrega, multa, valor_pago, status_pagamento)"
-               f" VALUES (%s, %s, %s, %s, %s, %s, %s)")
-        val = (datahoje, pessoa, resnomep[0], data_limite, multa, valor_pago, status_pag)
+        sql = (f"INSERT INTO locacao (data,pessoa, data_limite_entrega, multa, valor_pago, status_pagamento)"
+               f" VALUES (%s, %s, %s, %s, %s, %s)")
+        val = (datahoje, pessoa, data_limite, multa, valor_pago, status_pag)
         cursor.execute(sql, val)
 
         cursor.execute("SELECT id FROM locacao ORDER BY id DESC limit 1")
@@ -247,7 +243,10 @@ class Database:
         for preco in valores_filmes:
             soma += sum(preco)
 
-        cursor.execute("UPDATE locacao SET valor_locacao = %s where id = %s", (soma, ultimoid[0]))
+        totdeb = soma + multa
+        cursor.execute("UPDATE locacao SET valor_locacao = %s, total_debitos = %s where id = %s", (soma, totdeb, ultimoid[0]))
+
+
 
 
 
@@ -314,33 +313,33 @@ class Database:
         locacao = Locacao()
         locacao.id = rows[0][0]
         locacao.data = rows[0][1]
-        locacao.valor_locacao = rows[0][6]
-        locacao.data_limite_entrega = rows[0][7]
-        locacao.data_devolucao = rows[0][8]
-        locacao.multa = rows[0][9]
-        locacao.valor_pago = rows[0][10]
-        locacao.forma_pagamento = rows[0][11]
-        locacao.data_pagamento = rows[0][12]
-        locacao.status_pagamento = rows[0][13]
-        locacao.total_debitos = rows[0][14]
-        locacao.status_devolucao = rows[0][15]
+        locacao.valor_locacao = rows[0][4]
+        locacao.data_limite_entrega = rows[0][5]
+        locacao.data_devolucao = rows[0][6]
+        locacao.multa = rows[0][7]
+        locacao.valor_pago = rows[0][8]
+        locacao.forma_pagamento = rows[0][9]
+        locacao.data_pagamento = rows[0][10]
+        locacao.status_pagamento = rows[0][11]
+        locacao.total_debitos = rows[0][12]
+        locacao.status_devolucao = rows[0][13]
         pessoa = Pessoa()
-        pessoa.id_pessoa = rows[0][23]
-        pessoa.nome = rows[0][24]
-        pessoa.sobrenome = rows[0][25]
-        pessoa.idade = rows[0][26]
-        pessoa.genero = rows[0][27]
-        pessoa.endereco = rows[0][28]
-        pessoa.telefone = rows[0][29]
+        pessoa.id_pessoa = rows[0][21]
+        pessoa.nome = rows[0][22]
+        pessoa.sobrenome = rows[0][23]
+        pessoa.idade = rows[0][24]
+        pessoa.genero = rows[0][25]
+        pessoa.endereco = rows[0][26]
+        pessoa.telefone = rows[0][27]
         locacao.pessoa = pessoa
         filmes = []
         for row in rows:
             filme = Filme()
-            filme.id_filme = row[18]
-            filme.titulo = row[19]
-            filme.ano = row[20]
-            filme.valor = row[21]
-            filme.genero = row[22]
+            filme.id_filme = row[16]
+            filme.titulo = row[17]
+            filme.ano = row[18]
+            filme.valor = row[19]
+            filme.genero = row[20]
             filmes.append(filme)
         locacao.filmes = filmes
         return locacao
@@ -529,9 +528,7 @@ class Database:
             print("Registro não encontrado")
             return False
 
-        sql1 = "SELECT total_debitos FROM locacao WHERE id = %s"
-        val1 = id_locacao,
-        cursor.execute(sql1,val1)
+        cursor.execute("SELECT total_debitos FROM locacao WHERE id = %s", (id_locacao,))
         debitos = cursor.fetchone()
         debitospospag = debitos[0] - valor_pago
 
@@ -551,35 +548,8 @@ class Database:
         self.mydb.commit()
         return True
 
-        '''for l in self.__locacoes:
-            if l.id == id_locacao:
-                l.forma_pagamento = forma_pagamento
-                datapag = date.today()
-                l.data_pagamento = datapag.strftime("%d/%m/%Y")
-                if valor_pago > l.total_debitos:
-                    print("ERRO! Valor pago maior que o débito. Pagamento não aceito")
-                    return False
-                elif valor_pago == l.total_debitos:
-                    l.valor_pago = l.valor_pago + valor_pago
-                    l.total_debitos = (l.valor_locacao+l.multa)-l.valor_pago
-                    l.status_pagamento = "Pago"
-                    return True
-                elif valor_pago < l.total_debitos:
-                    if valor_pago > 0:
-                        l.valor_pago = l.valor_pago + valor_pago
-                        l.total_debitos = (l.valor_locacao+l.multa)-l.valor_pago
-                        return True
-                    else:
-                        return False
-
-        print("Código locação não encontrado")
-        return False'''
-
 
     def __verifica_nome_pessoa(self, pessoa: Pessoa) -> bool:
-        """
-        Se o nome da Pessoa for vazio retorna TRUE.
-        """
         if pessoa.nome == "" or pessoa.nome is None:
             return True
         else:
