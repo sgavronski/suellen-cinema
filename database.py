@@ -396,11 +396,72 @@ class Database:
                        "inner join pessoas on pessoas.id_pessoa = locacao.pessoa order by id")
         rows = cursor.fetchall()
         print(rows)
-        qtdloc = len(rows)
-        print(qtdloc)
-        for row in range (0, qtdloc):
 
-        return None
+
+        cursor.execute("select distinct id from locacao "
+                       "inner join locacaofilme on locacao.id = locacaofilme.id_locacao "
+                       "inner join filmes on filmes.id_filme = locacaofilme.id_filme "
+                       "inner join pessoas on pessoas.id_pessoa = locacao.pessoa "
+                       "order by id")
+        ids = cursor.fetchall()
+        print(ids)
+
+        todas_as_locacoes = []
+
+        locacaoatual = []
+
+        for id in ids:
+            print(id)
+            cursor.execute("select count(id) from locacao "
+                           "inner join locacaofilme on locacao.id = locacaofilme.id_locacao "
+                           "inner join filmes on filmes.id_filme = locacaofilme.id_filme "
+                           "inner join pessoas on pessoas.id_pessoa = locacao.pessoa "
+                           "where id = %s", (id[0],))
+            qtdlinhas = cursor.fetchone()
+            print(qtdlinhas)
+            filmes = []
+            locacaoatual.clear()
+            for row in rows:
+                if id[0] == row[0]:
+                    print (row)
+                    locacao = Locacao()
+                    locacao.id = row[0]
+                    locacao.data = row[1]
+                    locacao.valor_locacao = row[4]
+                    locacao.data_limite_entrega = row[5]
+                    locacao.data_devolucao = row[6]
+                    locacao.multa = row[7]
+                    locacao.valor_pago = row[8]
+                    locacao.forma_pagamento = row[9]
+                    locacao.data_pagamento = row[10]
+                    locacao.status_pagamento = row[11]
+                    locacao.total_debitos = row[12]
+                    locacao.status_devolucao = row[13]
+                    pessoa = Pessoa()
+                    pessoa.id_pessoa = row[21]
+                    pessoa.nome = row[22]
+                    pessoa.sobrenome = row[23]
+                    pessoa.idade = row[24]
+                    pessoa.genero = row[25]
+                    pessoa.endereco = row[26]
+                    pessoa.telefone = row[27]
+                    locacao.pessoa = pessoa
+                    filme = Filme()
+                    filme.id_filme = row[16]
+                    filme.titulo = row[17]
+                    filme.ano = row[18]
+                    filme.valor = row[19]
+                    filme.genero = row[20]
+                    filmes.append(filme)
+                    locacao.filmes = filmes
+                    locacaoatual.append(locacao)
+                    print(locacaoatual)
+                    print(len(locacaoatual))
+                    if len(locacaoatual) == qtdlinhas[0]:
+                        todas_as_locacoes.append(locacao)
+
+        print(todas_as_locacoes)
+        return todas_as_locacoes
 
     def fazer_devolucao(self, id_locacao: int, datadevolucao: str) -> bool:
         cursor = self.mydb.cursor()
