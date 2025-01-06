@@ -5,7 +5,6 @@ from typing import List
 from locacao import Locacao
 from pessoa import Pessoa
 from filme import Filme
-import json
 
 database_name = "Locadora"
 
@@ -98,30 +97,36 @@ class Database:
         cursor.execute (f"SELECT * FROM pessoas where id_pessoa = %s", (id,))
         rows = cursor.fetchall()   #rows = linhas
         print(rows)
-        pessoa = Pessoa()
-        for row in rows:
-            pessoa.id_pessoa = row[0]
-            pessoa.nome = row[1]
-            pessoa.sobrenome = row[2]
-            pessoa.idade = row[3]
-            pessoa.genero = row[4]
-            pessoa.endereco = row[5]
-            pessoa.telefone = row[6]
-        return pessoa
+        if rows:
+            pessoa = Pessoa()
+            for row in rows:
+                pessoa.id_pessoa = row[0]
+                pessoa.nome = row[1]
+                pessoa.sobrenome = row[2]
+                pessoa.idade = row[3]
+                pessoa.genero = row[4]
+                pessoa.endereco = row[5]
+                pessoa.telefone = row[6]
+            return pessoa
+        else:
+            return "Registro de pessoa não encontrada"
 
     def buscar_filme(self, id_filme: int):
         id = id_filme
         cursor = self.mydb.cursor()
         cursor.execute (f"SELECT * FROM {database_name}.filmes where id_filme = %s", (id,))
         rows = cursor.fetchall()   #rows = linhas
-        filme = Filme()
-        for row in rows:
-            filme.id_filme = row[0]
-            filme.titulo = row[1]
-            filme.ano = row[2]
-            filme.valor = row[3]
-            filme.genero = row[4]
-        return filme
+        if rows:
+            filme = Filme()
+            for row in rows:
+                filme.id_filme = row[0]
+                filme.titulo = row[1]
+                filme.ano = row[2]
+                filme.valor = row[3]
+                filme.genero = row[4]
+            return filme
+        else:
+            return "Registro de filme não encontrado"
 
 
     def atualizar_pessoa(self, pessoa: Pessoa) -> bool:
@@ -163,19 +168,33 @@ class Database:
 
 
     def deletar_pessoa(self, id_pessoa: int) -> bool:
-        id = id_pessoa
         cursor = self.mydb.cursor()
-        sql = f'DELETE FROM {database_name}.pessoas where id_pessoa = %s'
-        val = (id,)
-        cursor.execute(sql, val)
-        self.mydb.commit()
+        cursor.execute("SELECT * from pessoas where id_pessoa = %s", (id_pessoa,))
+        resultado = cursor.fetchone()
+        if resultado:
+            try:
+                cursor.execute ("DELETE FROM pessoas where id_pessoa = %s", (id_pessoa,))
+                self.mydb.commit()
+            except:
+                return False
+        else:
+            return False
+
         return True
 
     def deletar_filme(self, id_filme: int) -> bool:
-        id = id_filme
         cursor = self.mydb.cursor()
-        cursor.execute (f'DELETE FROM {database_name}.filmes where id_filme = %s', (id,))
-        self.mydb.commit()
+        cursor.execute("SELECT * from filmes where id_filme = %s", (id_filme,))
+        resultado = cursor.fetchone()
+        if resultado:
+            try:
+                cursor.execute (f'DELETE FROM {database_name}.filmes where id_filme = %s', (id_filme,))
+                self.mydb.commit()
+            except:
+                return False
+        else:
+            return False
+
         return True
 
     def get_todas_pessoas(self) -> []:
@@ -251,8 +270,16 @@ class Database:
 
 
     def buscar_locacao(self, id: int):
-        id_locacao = id
         cursor = self.mydb.cursor()
+
+        cursor.execute("SELECT * from locacao where id = %s", (id,))
+        resultado = cursor.fetchone()
+        if resultado:
+            print("Registro encontrado")
+        else:
+            print("Registro não encontrado")
+            return "Registro de locação não encontrado"
+
         cursor.execute("select * from locacao inner join locacaofilme on locacao.id = locacaofilme.id_locacao "
                        " inner join filmes on filmes.id_filme = locacaofilme.id_filme "
                        "inner join pessoas on pessoas.id_pessoa = locacao.pessoa "

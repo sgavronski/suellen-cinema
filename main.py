@@ -117,7 +117,9 @@ async def pessoa(id_pessoa: int):
     if pessoa_deletada:
         return "Cadastro excluído."
     else:
-        return "Cadastro não excluído. Código de identificação não encontrado"
+        return ("Cadastro não excluído. Possíveis motivos: "
+                "a) Código de identificação não encontrado "
+                "b) Registro de pessoa incluído em uma ou mais locações não permite sua exclusão ")
 
 
 @app.delete('/filme')
@@ -126,7 +128,9 @@ async def filme(id_filme: int):
     if filme_deletado:
         return "Filme excluído com sucesso"
     else:
-        return "Filme não excluído. Código de identificação não encontrado"
+        return ("Filme não excluído. Possíveis motivos: "
+                "a) Código de identificação não encontrado"
+                "b) Registro de filme incluído em uma ou mais locações não permite sua exclusão")
 
 @app.delete('/locacao')
 async def locacao(id: int):
