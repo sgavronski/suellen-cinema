@@ -49,7 +49,7 @@ async def locacao(cod_pessoa: int, cod_filmes: List[int] = Query(None)):
     if locacao_adicionada:
         return "Locação adicionada com sucesso"
     else:
-        return "Locação não efetuada. Campos de identificação de pessoa ou filme incompletos"
+        return "Locação não efetuada"
 
 
 @app.get('/pessoa')
@@ -73,7 +73,7 @@ async def pessoa(pessoa: Pessoa):
     if atualizado:
         return f'Cadastro de {pessoa.nome} atualizado!'
     else:
-        return f'Pessoa nao atualizada! Erro no código ou nome'
+        return f'Pessoa nao atualizada! Código não equivale a nenhuma pessoa ou nome não preenchido'
 
 
 @app.put('/filme')
@@ -82,7 +82,7 @@ async def filme(filme: Filme):
     if filmeatt:
         return f'Filme {filme.titulo} atualizado com sucesso'
     else:
-        return "Filme não foi atualizado pois ou não possui título ou não foi encontrado"
+        return "Filme não atualizado! Código não equivale a nenhum filme ou título não preenchido"
 
 
 @app.put('/locacao')

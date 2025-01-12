@@ -12,12 +12,6 @@ class Database:
 
     mydb = mysql.connector.connect(host="localhost", user="root", password="pudim1234", database="Locadora")
 
-    __pessoas: List[Pessoa] = []
-    __filmes: List[Filme] = []
-    __locacoes: List[Locacao] = []
-    __codigosdelocaçoes: List[int] = []
-    __codigosdepagamentos: List[int] = []
-
     def __init__(self):
         cursor = self.mydb.cursor()
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
@@ -42,18 +36,10 @@ class Database:
 
         self.mydb.commit()
 
-    def pessoa_size(self) -> int:
-        return len(self.__pessoas)
-
-    def films_size(self) -> int:
-         return len(self.__filmes)
-
     def add_pessoa(self, pessoa: Pessoa) -> bool:
         if self.__verifica_nome_pessoa(pessoa):
             print("Pessoa nao tem nome. Cancelar operacao")
             return False
-
-        self.__pessoas.append(pessoa)
 
         cursor = self.mydb.cursor()
 
@@ -64,9 +50,8 @@ class Database:
         endereco = pessoa.endereco
         telefone = pessoa.telefone
 
-        com = f"INSERT INTO Locadora.pessoas (nome, sobrenome, idade, genero, endereco, telefone) VALUES (%s, %s, %s, %s, %s, %s)"
-        val = (nome,sobrenome,idade,genero,endereco,telefone)
-        cursor.execute(com,val)
+        cursor.execute("INSERT INTO pessoas (nome, sobrenome, idade, genero, endereco, telefone) "
+                       "VALUES (%s, %s, %s, %s, %s, %s)", (nome,sobrenome,idade,genero,endereco,telefone))
         self.mydb.commit()
         return True
 
@@ -83,9 +68,8 @@ class Database:
         valor = filme.valor
         genero = filme.genero
 
-        sql = f"INSERT INTO Locadora.filmes (titulo, ano, valor, genero) VALUES (%s, %s, %s, %s)"
-        val = (titulo, ano, valor, genero)
-        cursor.execute(sql, val)
+        cursor.execute("INSERT INTO Locadora.filmes (titulo, ano, valor, genero) VALUES (%s, %s, %s, %s)",
+                       (titulo, ano, valor, genero))
         self.mydb.commit()
 
         return True
@@ -94,10 +78,12 @@ class Database:
     def buscar_pessoa(self, id_pessoa: int):
         id = id_pessoa
         cursor = self.mydb.cursor()
-        cursor.execute (f"SELECT * FROM pessoas where id_pessoa = %s", (id,))
-        rows = cursor.fetchall()   #rows = linhas
-        print(rows)
-        if rows:
+        cursor.execute("SELECT count(id_pessoa) from pessoas where id_pessoa = %s", (id,))
+        resultado = cursor.fetchone()
+        if resultado[0] >0:
+            cursor.execute (f"SELECT * FROM pessoas where id_pessoa = %s", (id,))
+            rows = cursor.fetchall()   #rows = linhas
+            print(rows)
             pessoa = Pessoa()
             for row in rows:
                 pessoa.id_pessoa = row[0]
@@ -111,12 +97,15 @@ class Database:
         else:
             return "Registro de pessoa não encontrada"
 
+
     def buscar_filme(self, id_filme: int):
         id = id_filme
         cursor = self.mydb.cursor()
-        cursor.execute (f"SELECT * FROM {database_name}.filmes where id_filme = %s", (id,))
-        rows = cursor.fetchall()   #rows = linhas
-        if rows:
+        cursor.execute("SELECT count(id_filme) from filmes where id_filme = %s", (id,))
+        resultado = cursor.fetchone()
+        if resultado[0]>0:
+            cursor.execute (f"SELECT * FROM filmes where id_filme = %s", (id,))
+            rows = cursor.fetchall()   #rows = linhas
             filme = Filme()
             for row in rows:
                 filme.id_filme = row[0]
@@ -133,69 +122,74 @@ class Database:
         if self.__verifica_nome_pessoa(pessoa):
             return False
 
-        id = pessoa.id_pessoa
-        nome = pessoa.nome
-        sobrenome = pessoa.sobrenome
-        idade = pessoa.idade
-        genero = pessoa.genero
-        endereco = pessoa.endereco
-        telefone = pessoa.telefone
-
         cursor = self.mydb.cursor()
-        sql = f'UPDATE {database_name}.pessoas SET nome = %s, sobrenome = %s, idade = %s, genero = %s, endereco = %s, telefone = %s where id_pessoa = %s'
-        val = nome, sobrenome, idade, genero, endereco, telefone, id
-        cursor.execute(sql,val)
-        self.mydb.commit()
-        return True
+
+        id = pessoa.id_pessoa
+        cursor.execute("SELECT count(id_pessoa) from pessoas where id_pessoa = %s", (id,))
+        resultado = cursor.fetchone()
+        if resultado[0] >0:
+            nome = pessoa.nome
+            sobrenome = pessoa.sobrenome
+            idade = pessoa.idade
+            genero = pessoa.genero
+            endereco = pessoa.endereco
+            telefone = pessoa.telefone
+            cursor.execute("UPDATE pessoas SET nome = %s, sobrenome = %s, idade = %s, genero = %s, endereco = %s, "
+                       "telefone = %s where id_pessoa = %s", (nome, sobrenome, idade, genero, endereco, telefone, id))
+            self.mydb.commit()
+            return True
+        else:
+            return False
 
 
     def atualizar_filme(self, filme: Filme) -> bool:
         if self.__verifica_titulo_filme(filme):
             return False
 
-        id = filme.id_filme
-        titulo = filme.titulo
-        ano = filme.ano
-        valor = filme.valor
-        genero = filme.genero
-
         cursor = self.mydb.cursor()
-        sql = f'UPDATE {database_name}.filmes SET titulo = %s, ano = %s, valor = %s, genero = %s where id_filme = %s'
-        val = titulo, ano, valor, genero, id
-        cursor.execute(sql, val)
-        self.mydb.commit()
-        return True
+        id = filme.id_filme
+        cursor.execute("SELECT count(id_filme) from filmes where id_filme = %s", (id,))
+        resultado = cursor.fetchone()
+        if resultado[0] > 0:
+            titulo = filme.titulo
+            ano = filme.ano
+            valor = filme.valor
+            genero = filme.genero
+            cursor.execute("UPDATE filmes SET titulo = %s, ano = %s, valor = %s, genero = %s where id_filme = %s",
+                           (titulo, ano, valor, genero, id))
+            self.mydb.commit()
+            return True
+        else:
+            return False
 
 
     def deletar_pessoa(self, id_pessoa: int) -> bool:
         cursor = self.mydb.cursor()
-        cursor.execute("SELECT * from pessoas where id_pessoa = %s", (id_pessoa,))
+        cursor.execute("SELECT count(id_pessoa) from pessoas where id_pessoa = %s", (id_pessoa,))
         resultado = cursor.fetchone()
-        if resultado:
+        if resultado[0] > 0:
             try:
                 cursor.execute ("DELETE FROM pessoas where id_pessoa = %s", (id_pessoa,))
                 self.mydb.commit()
+                return True
             except:
                 return False
         else:
             return False
-
-        return True
 
     def deletar_filme(self, id_filme: int) -> bool:
         cursor = self.mydb.cursor()
-        cursor.execute("SELECT * from filmes where id_filme = %s", (id_filme,))
+        cursor.execute("SELECT count(id_filme) from filmes where id_filme = %s", (id_filme,))
         resultado = cursor.fetchone()
-        if resultado:
+        if resultado[0]>0:
             try:
-                cursor.execute (f'DELETE FROM {database_name}.filmes where id_filme = %s', (id_filme,))
+                cursor.execute (f'DELETE FROM filmes where id_filme = %s', (id_filme,))
                 self.mydb.commit()
+                return True
             except:
                 return False
         else:
             return False
-
-        return True
 
     def get_todas_pessoas(self) -> []:
         cursor = self.mydb.cursor()
@@ -236,45 +230,59 @@ class Database:
         cursor = self.mydb.cursor()
 
         pessoa = cod_pessoa
-        filmes = cod_filmes
-        datahoje = date.today()
-        data_limite = datahoje + timedelta(days=3)
-        multa = 0
-        valor_pago = 0
-        status_pag = "Em débito"
+        cursor.execute("SELECT count(id_pessoa) from pessoas where id_pessoa = %s", (pessoa,))
+        resultp = cursor.fetchone()
+        if resultp[0]==0:
+            print('Pessoa não encontrada')
+            return False
+        else:
+            filmes = cod_filmes
+            for f in filmes:
+                cursor.execute("SELECT count(id_filme) from filmes where id_filme = %s", (f,))
+                resultf = cursor.fetchone()
+                if resultf[0]==0:
+                    print(f'Nenhum filme correspondente ao código {f} foi encontrado')
+                    return False
+            if len(filmes)==0:
+                print('Nenhum filme adicionado')
+                return False
 
-        sql = (f"INSERT INTO locacao (data,pessoa, data_limite_entrega, multa, valor_pago, status_pagamento)"
-               f" VALUES (%s, %s, %s, %s, %s, %s)")
-        val = (datahoje, pessoa, data_limite, multa, valor_pago, status_pag)
-        cursor.execute(sql, val)
+            datahoje = date.today()
+            data_limite = datahoje + timedelta(days=3)
+            multa = 0
+            valor_pago = 0
+            status_pag = "Em débito"
 
-        cursor.execute("SELECT id FROM locacao ORDER BY id DESC limit 1")
-        ultimoid = cursor.fetchone()
+            cursor.execute ("INSERT INTO locacao (data,pessoa, data_limite_entrega, multa, valor_pago, status_pagamento)"
+                            "VALUES (%s, %s, %s, %s, %s, %s)", (datahoje, pessoa, data_limite, multa, valor_pago, status_pag))
 
-        valores_filmes = []
-        soma = 0
-        for f in filmes:
-            cursor.execute("INSERT INTO locacaofilme (id_locacao,id_filme) VALUES (%s,%s)", (ultimoid[0], f,))
-            cursor.execute("SELECT valor FROM filmes where id_filme = %s", (f,))
-            valorf = cursor.fetchone()
-            valores_filmes.append(valorf)
+            cursor.execute("SELECT id FROM locacao ORDER BY id DESC limit 1")
+            ultimoid = cursor.fetchone()
 
-        for preco in valores_filmes:
-            soma += sum(preco)
+            valores_filmes = []
+            soma = 0
+            for f in filmes:
+                cursor.execute("INSERT INTO locacaofilme (id_locacao,id_filme) VALUES (%s,%s)", (ultimoid[0], f,))
+                cursor.execute("SELECT valor FROM filmes where id_filme = %s", (f,))
+                valorf = cursor.fetchone()
+                valores_filmes.append(valorf)
 
-        totdeb = soma + multa
-        cursor.execute("UPDATE locacao SET valor_locacao = %s, total_debitos = %s where id = %s", (soma, totdeb, ultimoid[0]))
+            for preco in valores_filmes:
+                soma += sum(preco)
 
-        self.mydb.commit()
-        return True
+            totdeb = soma + multa
+            cursor.execute("UPDATE locacao SET valor_locacao = %s, total_debitos = %s where id = %s", (soma, totdeb, ultimoid[0]))
+
+            self.mydb.commit()
+            return True
 
 
     def buscar_locacao(self, id: int):
         cursor = self.mydb.cursor()
 
-        cursor.execute("SELECT * from locacao where id = %s", (id,))
+        cursor.execute("SELECT count(id) from locacao where id = %s", (id,))
         resultado = cursor.fetchone()
-        if resultado:
+        if resultado[0]>0:
             print("Registro encontrado")
         else:
             print("Registro não encontrado")
@@ -399,31 +407,39 @@ class Database:
         return True
 
     def delete_locacao(self, id: int) -> bool:
-        locacao_encontrada = self.buscar_locacao(id)
-        if locacao_encontrada is None:
+        cursor = self.mydb.cursor()
+        cursor.execute("SELECT count(id) from locacao where id = %s", (id,))
+        resultado = cursor.fetchone()
+        if resultado[0]==0:
+            print('Locação não encontrada')
             return False
+        else:
+            cursor.execute("SELECT status_devolucao from locacao where id = %s", (id,))
+            status_dev = cursor.fetchone()
+            print(status_dev)
+            if status_dev[0] == 'Devolvido':
+                print('Não é possível deletar locação. Locação já devolvida')
+                return False
+            cursor.execute("SELECT status_pagamento from locacao where id = %s", (id,))
+            status_pag = cursor.fetchone()
+            print(status_pag[0])
+            if status_pag[0] == 'Pago':
+                print('Não é possível deletar locação. Locação já foi paga. Pode apenas ser atualizada')
+                return False
+            cursor.execute("SELECT valor_pago from locacao where id = %s", (id,))
+            valor_pag = cursor.fetchone()
+            print(valor_pag[0])
+            if valor_pag[0] > 0:
+                print('Já foi recebido um valor de pagamento. Só será possível alterar a locação')
+                return False
+            cursor.execute("DELETE from locacaofilme where id_locacao = %s", (id,))
+            cursor.execute("DELETE FROM locacao where id = %s", (id,))
+            self.mydb.commit()
+            return True
 
-        if locacao_encontrada.status_devolucao == "Devolvida":
-            print("Não é possível deletar a locação pois já foi finalizada")
-            return False
-        if locacao_encontrada.status_pagamento == "Pago":
-            print("Não é possível deletar a locação pois já foi paga")
-            return False
-        if locacao_encontrada.valor_pago > 0:
-            print("Não é possível deletar a locação pois já foi paga")
-            return False
-
-        self.__locacoes.remove(locacao_encontrada)
-        return True
 
     def get_todas_locacoes(self) -> List[Locacao]:
         cursor = self.mydb.cursor()
-        cursor.execute("select * from locacao inner join locacaofilme on locacao.id = locacaofilme.id_locacao "
-                       "inner join filmes on filmes.id_filme = locacaofilme.id_filme "
-                       "inner join pessoas on pessoas.id_pessoa = locacao.pessoa order by id")
-        rows = cursor.fetchall()
-        print(rows)
-
 
         cursor.execute("select distinct id from locacao "
                        "inner join locacaofilme on locacao.id = locacaofilme.id_locacao "
@@ -438,7 +454,10 @@ class Database:
         locacaoatual = []
 
         for id in ids:
-            print(id)
+            cursor.execute("select * from locacao inner join locacaofilme on locacao.id = locacaofilme.id_locacao "
+                           "inner join filmes on filmes.id_filme = locacaofilme.id_filme "
+                           "inner join pessoas on pessoas.id_pessoa = locacao.pessoa where id = %s", (id[0],))
+            rows = cursor.fetchall()
             cursor.execute("select count(id) from locacao "
                            "inner join locacaofilme on locacao.id = locacaofilme.id_locacao "
                            "inner join filmes on filmes.id_filme = locacaofilme.id_filme "
@@ -493,9 +512,9 @@ class Database:
     def fazer_devolucao(self, id_locacao: int, datadevolucao: str) -> bool:
         cursor = self.mydb.cursor()
 
-        cursor.execute("SELECT * from locacao where id = %s", (id_locacao,))
+        cursor.execute("SELECT count(id) from locacao where id = %s", (id_locacao,))
         resultado = cursor.fetchone()
-        if resultado:
+        if resultado[0]>0:
             print("Registro encontrado")
         else:
             print("Registro não encontrado")
@@ -535,41 +554,14 @@ class Database:
 
         return True
 
-        '''locacao_encontrada = self.buscar_locacao(id_locacao)
-        if locacao_encontrada is None:
-            return False
-
-        multa: int = 0
-        z: int
-        for l in self.__locacoes:
-            if l.id == id_locacao:
-                data_limite_format = datetime.strptime(l.data_limite_entrega,"%d/%m/%Y")
-                x = data_limite_format.date()
-                l.data_devolucao = datadevolucao
-                data_dev = datetime.strptime(datadevolucao,"%d/%m/%Y")
-                y = data_dev.date()
-                diferenca = y - x
-                z = diferenca.days
-                if z <= 0:
-                    multa = 0
-                else:
-                    multa = z * 5
-                l.multa = multa
-                l.total_debitos = (l.multa + l.valor_locacao)-l.valor_pago
-        if locacao_encontrada.total_debitos > 0:
-            locacao_encontrada.status_devolucao = "Devolvida"
-            locacao_encontrada.status_pagamento = "Em débito"
-        else:
-            locacao_encontrada.status_devolucao = "Devolvida"
-        return True'''
 
     def efetuar_pagamento(self, id_locacao: int, forma_pagamento: str, valor_pago: float) -> bool:
 
         cursor = self.mydb.cursor()
 
-        cursor.execute("SELECT * from locacao where id = %s", (id_locacao,))
+        cursor.execute("SELECT count(id) from locacao where id = %s", (id_locacao,))
         resultado = cursor.fetchone()
-        if resultado:
+        if resultado[0]>0:
             print("Registro encontrado")
         else:
             print("Registro não encontrado")
