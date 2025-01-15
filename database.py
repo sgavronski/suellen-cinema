@@ -383,6 +383,42 @@ class Database:
                                    (cod_pessoa, status_pag, multa, valor_pago, datahoje, data_limite, soma, totdeb, id))
                     self.mydb.commit()
                     return True
+                else:
+                    cursor.execute("delete from locacaofilme where id_locacao = %s", (id,))
+                    cursor.execute("Select multa, data, data_limite_entrega from locacao where id = %s", (id,))
+                    resultdados = cursor.fetchall()
+                    print(resultdados)
+                    datahoje = resultdados[0][1]
+                    data_limite = resultdados[0][2]
+                    multa = resultdados[0][0]
+                    valor_pago = resultvalor[0]
+
+                    valores_filmes = []
+                    soma = 0
+                    for f in cod_filmes:
+                        cursor.execute("INSERT INTO locacaofilme (id_locacao,id_filme) VALUES (%s,%s)",
+                                       (id, f,))
+                        cursor.execute("SELECT valor FROM filmes where id_filme = %s", (f,))
+                        valorf = cursor.fetchone()
+                        valores_filmes.append(valorf)
+
+                    for preco in valores_filmes:
+                        soma += sum(preco)
+
+                    totdeb = (soma + multa)-valor_pago
+                    if totdeb > 0:
+                        status_pag = "Em débito"
+                    if totdeb == 0:
+                        status_pag = "Pago"
+                    if totdeb < 0:
+                        status_pag = "Pago"
+                        print(f'Valor da nova locação menor que o valor pago. Devolver {totdeb} reais para o cliente')
+                    cursor.execute(
+                        "UPDATE locacao SET pessoa = %s, status_pagamento = %s, multa = %s, valor_pago = %s, data = %s, data_limite_entrega = %s, valor_locacao = %s, total_debitos = %s where id = %s",
+                        (cod_pessoa, status_pag, multa, valor_pago, datahoje, data_limite, soma, totdeb, id))
+                    self.mydb.commit()
+                    return True
+
 
 
         if locacao_encontrada.status_devolucao == "Devolvida":
