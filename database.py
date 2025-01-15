@@ -329,13 +329,60 @@ class Database:
         return locacao
 
     def atualizar_locacao(self, id: int, cod_pessoa: int, cod_filmes: []) -> bool:
-        locacao_encontrada = self.buscar_locacao(id)
-        if locacao_encontrada is None:
-            return False
+        cursor = self.mydb.cursor()
 
-        if cod_pessoa is None:
-            print("Pessoa não identificada")
+        cursor.execute("SELECT count(id) from locacao where id = %s", (id,))
+        resultid = cursor.fetchone()
+        if resultid[0] == 0:
+            print('Locação não encontrada')
             return False
+        else:
+            cursor.execute("SELECT count(id_pessoa) from pessoas where id_pessoa = %s", (cod_pessoa,))
+            resultpes = cursor.fetchone()
+            if resultpes[0] == 0:
+                print('Pessoa não encontrada')
+                return False
+            else:
+                for f in cod_filmes:
+                    cursor.execute("Select count(id_filme) from filmes where id_filme = %s", (f,))
+                    resultfil = cursor.fetchone()
+                    if resultfil[0] == 0:
+                        print(f'Filme de código {f} não encontrado')
+                        return False
+
+            cursor.execute("Select status_devolucao from locacao where id = %s", (id,))
+            resultstadev = cursor.fetchone()
+            if resultstadev[0] == "Devolvido":
+                print('Locação já devolvida')
+                return False
+            else:
+                cursor.execute("SELECT valor_pago from locacao where id = %s", (id,))
+                resultvalor = cursor.fetchone()
+                if resultvalor[0] == 0:
+                    cursor.execute("delete from locacaofilme where id_locacao = %s", (id,))
+                    datahoje = date.today()
+                    data_limite = datahoje + timedelta(days=3)
+                    multa = 0
+                    valor_pago = 0
+                    status_pag = "Em débito"
+
+                    valores_filmes = []
+                    soma = 0
+                    for f in cod_filmes:
+                        cursor.execute("INSERT INTO locacaofilme (id_locacao,id_filme) VALUES (%s,%s)",
+                                       (id, f,))
+                        cursor.execute("SELECT valor FROM filmes where id_filme = %s", (f,))
+                        valorf = cursor.fetchone()
+                        valores_filmes.append(valorf)
+
+                    for preco in valores_filmes:
+                        soma += sum(preco)
+
+                    totdeb = soma + multa
+                    cursor.execute("UPDATE locacao SET pessoa = %s, status_pagamento = %s, multa = %s, valor_pago = %s, data = %s, data_limite_entrega = %s, valor_locacao = %s, total_debitos = %s where id = %s",
+                                   (cod_pessoa, status_pag, multa, valor_pago, datahoje, data_limite, soma, totdeb, id))
+                    self.mydb.commit()
+                    return True
 
 
         if locacao_encontrada.status_devolucao == "Devolvida":

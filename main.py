@@ -1,3 +1,5 @@
+from contextlib import nullcontext
+
 import uvicorn
 
 from typing import List
@@ -86,29 +88,19 @@ async def filme(filme: Filme):
 
 
 @app.put('/locacao')
-async def locacao(id: str = Query(None), cod_pessoa: str = Query(None), cod_filmes: List[str] = Query(None)):
-    if id is None or id == "":
+async def locacao(id: int = Query(None), cod_pessoa: int = Query(None), cod_filmes: List[int] = Query(None)):
+    if id is None:
         return "Falta id da locação"
-    elif cod_pessoa is None or cod_pessoa == "":
+    elif cod_pessoa is None:
         return "Falta codigo da pessoa"
     elif cod_filmes is None:
         return "Falta código de filme"
 
-    id2 = int(id)
-    cod_pessoa2 = int(cod_pessoa)
-    cod_filmes2 = list(map(int,cod_filmes))
-    print(id2)
-    print(cod_pessoa2)
-    print(cod_filmes2)
-    qtsfilmes = len(cod_filmes2)
-    if qtsfilmes == 0:
-        return "Falta código de filme"
-
-    atualizado = app_database.atualizar_locacao(id2, cod_pessoa2, cod_filmes2)
+    atualizado = app_database.atualizar_locacao(id, cod_pessoa, cod_filmes)
     if atualizado:
         return f'Locacao atualizado com sucesso'
     else:
-        return "Locacao não foi atualizado pois não foi encontrada ou já foi finalizada"
+        return "Locacao não foi atualizado pois a) não foi encontrada, b) cliente não encontrado, c) filmes não encontrados, d)já foi finalizada"
 
 
 @app.delete('/pessoa')
