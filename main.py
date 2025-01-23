@@ -1,13 +1,10 @@
-from contextlib import nullcontext
-
 import uvicorn
-
 from typing import List
 from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse
-from pessoa import Pessoa
-from filme import Filme
 from database import Database
+from filme import Filme
+from pessoa import Pessoa
 
 
 app = FastAPI()

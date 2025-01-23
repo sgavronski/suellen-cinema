@@ -10,12 +10,14 @@ database_name = "Locadora"
 
 class Database:
 
-    mydb = mysql.connector.connect(host="localhost", user="root", password="pudim1234", database="Locadora")
-
     def __init__(self):
+        self.mydb = mysql.connector.connect(host="localhost", user="root", password="pudim1234")
         cursor = self.mydb.cursor()
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
+        self.mydb.commit()
 
+        self.mydb = mysql.connector.connect(host="localhost", user="root", password="pudim1234", database=database_name)
+        cursor = self.mydb.cursor()
         cursor.execute(f"CREATE TABLE IF NOT EXISTS {database_name}.pessoas ("
                        f"id_pessoa INT AUTO_INCREMENT PRIMARY KEY, "
                        f"nome VARCHAR(30), sobrenome VARCHAR(50),"

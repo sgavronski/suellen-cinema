@@ -15,7 +15,7 @@ Pre-requisitos:
  - Iniciar Programa Web (Debug): Licar no botão verde do inseto (debug) com a classe `main.py` selecionada no PyCharm.
  - Instalar MySQL no Python: `pip install mysql-connector-python`
  - Criar Docker do MariaDB: `docker run --detach --name mariadb --publish 3306:3306 --env MARIADB_ROOT_PASSWORD=pudim1234  mariadb:10.6`
-
+ - Instalar biblioteca de teste: `pip install httpx`
 
 ## Operações GIT
  - Verificar status dos arquivos: `git status`
