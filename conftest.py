@@ -15,3 +15,14 @@ def pessoa_jorge():
         "telefone": "47991161202"
     }
     return pessoa
+
+
+@pytest.fixture
+def filme_harry():
+    filme = {
+            "titulo": "Harry Potter",
+            "ano": "2010",
+            "valor": "15",
+            "genero": "Fantasia"
+            }
+    return filme
