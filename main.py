@@ -28,7 +28,7 @@ async def html():
 async def pessoa(pessoa: Pessoa):
     adicionado = app_database.add_pessoa(pessoa)
     if adicionado:
-        return f"Cadastro de {pessoa.nome} adicionado com sucesso"
+        return f"Cadastro de {pessoa.nome}, código *{pessoa.id_pessoa}* adicionado com sucesso"
     else:
         return "ERRO! Cadastro não realizado"
 
@@ -36,7 +36,7 @@ async def pessoa(pessoa: Pessoa):
 @app.post('/filme')
 async def filme(filme: Filme):
     if app_database.adicionar_filme(filme):
-        return f'Cadastro do filme {filme.titulo} adicionado com sucesso.'
+        return f'Cadastro do filme {filme.titulo}, código *{filme.id_filme}* adicionado com sucesso.'
     else:
         return "Filme não adicionado pois não possui título ou código inválido/nulo ou repetido"
 

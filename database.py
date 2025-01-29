@@ -54,6 +54,7 @@ class Database:
 
         cursor.execute("INSERT INTO pessoas (nome, sobrenome, idade, genero, endereco, telefone) "
                        "VALUES (%s, %s, %s, %s, %s, %s)", (nome,sobrenome,idade,genero,endereco,telefone))
+        pessoa.id_pessoa = cursor.lastrowid
         self.mydb.commit()
         return True
 
@@ -70,8 +71,9 @@ class Database:
         valor = filme.valor
         genero = filme.genero
 
-        cursor.execute("INSERT INTO Locadora.filmes (titulo, ano, valor, genero) VALUES (%s, %s, %s, %s)",
+        cursor.execute("INSERT INTO filmes (titulo, ano, valor, genero) VALUES (%s, %s, %s, %s)",
                        (titulo, ano, valor, genero))
+        filme.id_filme = cursor.lastrowid
         self.mydb.commit()
 
         return True
