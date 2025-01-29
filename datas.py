@@ -1,6 +1,10 @@
 from datetime import date, datetime, timedelta
 
 data1 = date.today()
+dia = data1.strftime("%d")
+mes = data1.strftime("%m")
+ano = data1.strftime("%Y")
+print(dia, mes, ano)
 data2 = data1 + timedelta(days=5)
 print(data1)
 print(data2)

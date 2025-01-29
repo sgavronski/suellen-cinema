@@ -1,7 +1,8 @@
 import mysql.connector
+from datetime import date
 import database
-from conftest import pessoa_jorge
-from main import app
+from conftest import pessoa_jorge, pessoa_paulo, filme_mib
+from main import app, locacao
 from fastapi.testclient import TestClient
 
 
@@ -134,7 +135,30 @@ class TestMain: #ESSA É A CLASSE DE TESTES
         assert response.text == f"\"Locação código *{idlo}* adicionada com sucesso\""
 
 
-    def test_delete_locacao(self, pessoa_jorge, filme_harry):
+    def test_get_locacao(self, pessoa_paulo, filme_mib):
+        response = self.navegador.post("/pessoa",json=pessoa_paulo)
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idpe = response.text[id1+1:id2]
+
+        response = self.navegador.post("/filme", json=filme_mib)
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idfi = response.text[id1 + 1:id2]
+
+        response = self.navegador.post(f"locacao?cod_pessoa={idpe}&cod_filmes={idfi}")
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idlo = response.text[id1 + 1:id2]
+        assert response.text == f"\"Locação código *{idlo}* adicionada com sucesso\""
+
+        response = self.navegador.get(f"/locacao?id={idlo}")
+        assert response.status_code == 200
+
+        locacao = response.json()
+        assert locacao["valor_locacao"] == 12
+
+    def test_delete_locacao_nao_finalizada(self, pessoa_jorge, filme_harry):
         response = self.navegador.post("/pessoa",json=pessoa_jorge)
         id1 = response.text.find('*')
         id2 = response.text.rfind('*')
@@ -154,6 +178,50 @@ class TestMain: #ESSA É A CLASSE DE TESTES
         response = self.navegador.delete(f"locacao?id={idlo}")
         assert response.status_code == 200
         assert response.text == "\"Locacao excluída com sucesso\""
+
+    def test_devolucao(self,pessoa_jorge, filme_harry):
+        response = self.navegador.post("/pessoa",json=pessoa_jorge)
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idpe = response.text[id1+1:id2]
+
+        response = self.navegador.post("/filme", json=filme_harry)
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idfi = response.text[id1 + 1:id2]
+
+        response = self.navegador.post(f"locacao?cod_pessoa={idpe}&cod_filmes={idfi}")
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idlo = response.text[id1 + 1:id2]
+        assert response.text == f"\"Locação código *{idlo}* adicionada com sucesso\""
+
+        data1 = date.today()
+        dia = data1.strftime("%d")
+        mes = data1.strftime("%m")
+        ano = data1.strftime("%Y")
+        response = self.navegador.post(f"/devolucao?id_locacao={idlo}&data_devolucao={dia}%2F{mes}%2F{ano}")
+        assert response.text == "\"Devolução efetuada\""
+
+    def test_pagamento(self,pessoa_jorge, filme_harry):
+        response = self.navegador.post("/pessoa",json=pessoa_jorge)
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idpe = response.text[id1+1:id2]
+
+        response = self.navegador.post("/filme", json=filme_harry)
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idfi = response.text[id1 + 1:id2]
+
+        response = self.navegador.post(f"locacao?cod_pessoa={idpe}&cod_filmes={idfi}")
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idlo = response.text[id1 + 1:id2]
+        assert response.text == f"\"Locação código *{idlo}* adicionada com sucesso\""
+
+        response = self.navegador.post(f"pagamento?id_locacao={idlo}&forma_pagamento=dinheiro&valorpago=10")
+        assert response.text == "\"Pagamento efetuado\""
 
     # Executa no final de todos os testes.
     @classmethod
