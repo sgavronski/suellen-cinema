@@ -45,8 +45,10 @@ async def filme(filme: Filme):
 #async def locacao(cod_pessoa: int, cod_filmes: int):
 async def locacao(cod_pessoa: int, cod_filmes: List[int] = Query(None)):
     locacao_adicionada = app_database.adicionar_locacao(cod_pessoa, cod_filmes)
+    idlo = app_database.ultima_locacao()
+
     if locacao_adicionada:
-        return "Locação adicionada com sucesso"
+        return f"Locação código *{idlo}* adicionada com sucesso"
     else:
         return "Locação não efetuada"
 
@@ -125,7 +127,7 @@ async def filme(id_filme: int):
 async def locacao(id: int):
     deletado = app_database.delete_locacao(id)
     if deletado:
-        return "Locacao Excluída com sucesso"
+        return "Locacao excluída com sucesso"
     else:
         return "Locação não excluída pois não foi encontrada ou já foi finalizada"
 

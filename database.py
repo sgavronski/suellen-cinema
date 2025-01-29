@@ -276,7 +276,6 @@ class Database:
 
             totdeb = soma + multa
             cursor.execute("UPDATE locacao SET valor_locacao = %s, total_debitos = %s where id = %s", (soma, totdeb, ultimoid[0]))
-
             self.mydb.commit()
             return True
 
@@ -456,6 +455,12 @@ class Database:
             self.mydb.commit()
             return True
 
+    def ultima_locacao(self):
+        cursor = self.mydb.cursor()
+        cursor.execute("SELECT id FROM locacao ORDER BY id DESC limit 1")
+        result = cursor.fetchone()
+        idlo = result[0]
+        return idlo
 
     def get_todas_locacoes(self) -> List[Locacao]:
         cursor = self.mydb.cursor()

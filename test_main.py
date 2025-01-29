@@ -1,5 +1,3 @@
-from http.client import responses
-
 import mysql.connector
 import database
 from conftest import pessoa_jorge
@@ -118,15 +116,54 @@ class TestMain: #ESSA É A CLASSE DE TESTES
         response = self.navegador.delete(f"/filme?id_filme={id}")
         assert response.status_code == 200
 
+    def test_post_locacao(self, pessoa_jorge, filme_harry):
+        response = self.navegador.post("/pessoa",json=pessoa_jorge)
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idpe = response.text[id1+1:id2]
+
+        response = self.navegador.post("/filme", json=filme_harry)
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idfi = response.text[id1 + 1:id2]
+
+        response = self.navegador.post(f"locacao?cod_pessoa={idpe}&cod_filmes={idfi}")
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idlo = response.text[id1 + 1:id2]
+        assert response.text == f"\"Locação código *{idlo}* adicionada com sucesso\""
+
+
+    def test_delete_locacao(self, pessoa_jorge, filme_harry):
+        response = self.navegador.post("/pessoa",json=pessoa_jorge)
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idpe = response.text[id1+1:id2]
+
+        response = self.navegador.post("/filme", json=filme_harry)
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idfi = response.text[id1 + 1:id2]
+
+        response = self.navegador.post(f"locacao?cod_pessoa={idpe}&cod_filmes={idfi}")
+        id1 = response.text.find('*')
+        id2 = response.text.rfind('*')
+        idlo = response.text[id1 + 1:id2]
+        assert response.text == f"\"Locação código *{idlo}* adicionada com sucesso\""
+
+        response = self.navegador.delete(f"locacao?id={idlo}")
+        assert response.status_code == 200
+        assert response.text == "\"Locacao excluída com sucesso\""
+
     # Executa no final de todos os testes.
     @classmethod
     def teardown_class(cls):
         print("Final de todos os testes.")
 
     # Executa no final de cada teste.
-    def teardown_method(self, test_method):
+    '''def teardown_method(self, test_method):
         cursor = self.banco_de_dados.cursor()
         cursor.execute(f"delete from pessoas where id_pessoa >0")
         cursor.execute(f"delete from filmes where id_filme >0")
         self.banco_de_dados.commit()
-        print("Registros deletados.")
+        print("Registros deletados.")'''
