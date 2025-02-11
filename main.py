@@ -5,6 +5,8 @@ from fastapi.responses import HTMLResponse
 from database import Database
 from filme import Filme
 from pessoa import Pessoa
+import view.html_home
+import view.html_pessoas
 
 
 app = FastAPI()
@@ -20,8 +22,17 @@ async def root():
 # Exemplo retornando uma pagina HTML.
 @app.get("/html", response_class=HTMLResponse)
 async def html():
-    html = '<!DOCTYPE html> <html> <body> <h1>Cinema Suellen</h1> <p>Cinema da Suellen.</p> </body> </html>'
-    return HTMLResponse(content=html, status_code=200)
+    return HTMLResponse(content= view.html_home.home, status_code=200)
+
+
+@app.get("/html/pessoas/cadastro", response_class=HTMLResponse)
+async def html_pessoas_cadastro():
+    return HTMLResponse(content=view.html_pessoas.cadastro, status_code=200)
+
+
+@app.get("/html/pessoas/lista", response_class=HTMLResponse)
+async def html_pessoas_lista():
+    return HTMLResponse(content=view.html_pessoas.lista, status_code=200)
 
 
 @app.post('/pessoa')
