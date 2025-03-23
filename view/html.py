@@ -54,7 +54,7 @@ menu = '''
                 </a>
             </td>
             <td>
-                <a href="http://127.0.0.1:8000/html/filmes/cadastro">
+                <a href="http://127.0.0.1:8000/html/filmes/cadastro_filme">
                     <button>Cadastrar</button>
                 </a>
             </td>

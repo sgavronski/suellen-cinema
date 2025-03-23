@@ -414,6 +414,7 @@ class TestMain: #ESSA É A CLASSE DE TESTES
     # Executa no final de cada teste.
     '''def teardown_method(self, test_method):
         cursor = self.banco_de_dados.cursor()
+        #cursor.execute("update locacao set status_locacao = null")
         cursor.execute(f"delete from pessoas where id_pessoa >0")
         cursor.execute(f"delete from filmes where id_filme >0")
         self.banco_de_dados.commit()

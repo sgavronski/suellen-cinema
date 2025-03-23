@@ -9,8 +9,6 @@ home = f'''
         </head>
         <body> 
             <h1>Cinema Suellen</h1> 
-            <p>Cinema da Suellen.</p>
-            <h2>Cinema da Suellen.</h2>
             
             <footer>
                 {menu}
