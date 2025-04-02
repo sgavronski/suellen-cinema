@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            table {
+              font-family: arial, sans-serif;
+              border-collapse: collapse;
+              width: 100%;
+            }
+
+            td, th {
+              border: 1px solid #dddddd;
+              text-align: left;
+              padding: 8px;
+            }
+
+            tr:nth-child(even) {
+              background-color: #dddddd;
+            }
+
+            footer {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <form id="myForm" action="javascript:buscarFilme()">
+            <label for="fname">Código do filme:</label>
+            <input type="text" id="id_filme" name="id_filme"><br><br>
+
+            <input type="submit" value="Buscar">
+        </form>
+
+
+        <script type="text/javascript">
+
+            function buscarFilme() {
+
+                        alert("Busca realizada!");
+
+            }
+        </script>
+    </body>
+</html>

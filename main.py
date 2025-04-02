@@ -5,8 +5,6 @@ from fastapi.responses import HTMLResponse
 from database import Database
 from filme import Filme
 from pessoa import Pessoa
-import view.html_home
-import view.html_pessoas
 
 
 app = FastAPI()
@@ -20,21 +18,71 @@ async def root():
 
 
 # Exemplo retornando uma pagina HTML.
-@app.get("/html", response_class=HTMLResponse)
-async def html():
-    return HTMLResponse(content= view.html_home.home, status_code=200)
+
+# PAGINAS HTML PESSOAS
+@app.get("/html/pessoa_cadastro", response_class=HTMLResponse)
+async def html_pessoa_cadastro():
+    with open("html/pessoa/pessoa_cadastro.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return HTMLResponse(content=html_content, status_code=200)
+
+@app.get("/html/pessoa_lista", response_class=HTMLResponse)
+async def html_pessoa_lista():
+    with open("html/pessoa/pessoa_lista.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return HTMLResponse(content=html_content, status_code=200)
+
+@app.get("/html/pessoa_deletar", response_class=HTMLResponse)
+async def html_pessoa_deletar():
+    with open("html/pessoa/pessoa_delete.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return HTMLResponse(content=html_content, status_code=200)
+
+@app.get("/html/pessoa_alterar", response_class=HTMLResponse)
+async def html_pessoa_alterar():
+    with open("html/pessoa/pessoa_alterar.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return HTMLResponse(content=html_content, status_code=200)
+
+@app.get("/html/pessoa_buscar", response_class=HTMLResponse)
+async def html_pessoa_buscar():
+    with open("html/pessoa/pessoa_buscar.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return HTMLResponse(content=html_content, status_code=200)
 
 
-@app.get("/html/pessoas/cadastro", response_class=HTMLResponse)
-async def html_pessoas_cadastro():
-    return HTMLResponse(content=view.html_pessoas.cadastro, status_code=200)
+# PAGINAS HTML FILMES
+@app.get("/html/filme_cadastro", response_class=HTMLResponse)
+async def html_filme_cadastro():
+    with open("html/filme/filme_cadastro.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return HTMLResponse(content=html_content, status_code=200)
 
+@app.get("/html/filme_lista", response_class=HTMLResponse)
+async def html_filme_lista():
+    with open("html/filme/filme_lista.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return HTMLResponse(content=html_content, status_code=200)
 
-@app.get("/html/pessoas/lista", response_class=HTMLResponse)
-async def html_pessoas_lista():
-    return HTMLResponse(content=view.html_pessoas.lista, status_code=200)
+@app.get("/html/filme_deletar", response_class=HTMLResponse)
+async def html_filme_deletar():
+    with open("html/filme/filme_delete.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return HTMLResponse(content=html_content, status_code=200)
 
+@app.get("/html/filme_alterar", response_class=HTMLResponse)
+async def html_filme_alterar():
+    with open("html/filme/filme_alterar.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return HTMLResponse(content=html_content, status_code=200)
 
+@app.get("/html/filme_buscar", response_class=HTMLResponse)
+async def html_filme_buscar():
+    with open("html/filme/filme_buscar.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return HTMLResponse(content=html_content, status_code=200)
+
+# END POINTS DA API
 @app.post('/pessoa')
 async def pessoa(pessoa: Pessoa):
     adicionado = app_database.add_pessoa(pessoa)

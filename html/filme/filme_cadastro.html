@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            table {
+              font-family: arial, sans-serif;
+              border-collapse: collapse;
+              width: 100%;
+            }
+
+            td, th {
+              border: 1px solid #dddddd;
+              text-align: left;
+              padding: 8px;
+            }
+
+            tr:nth-child(even) {
+              background-color: #dddddd;
+            }
+
+            footer {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <form id="myForm" action="javascript:salvarFilme()">
+            <label for="fname">Título:</label>
+            <input type="text" id="titulo" name="titulo"><br><br>
+
+            <label for="lname">Ano:</label>
+            <input type="text" id="ano" name="ano"><br><br>
+
+            <label for="lname">Valor:</label>
+            <input type="text" id="valor" name="valor"><br><br>
+
+            <label for="lname">Genero:</label>
+            <input type="text" id="genero" name="genero"><br><br>
+
+            <input type="submit" value="Salvar">
+
+        </form>
+
+
+        <script type="text/javascript">
+            var form = document.getElementById('myForm');
+
+            function salvarFilme() {
+                var xhr = new XMLHttpRequest();
+                var formData = new FormData(form);
+
+                // Open the request.
+                xhr.open('POST',' http://127.0.0.1:8000/filme')
+                xhr.setRequestHeader("Content-Type", "application/json");
+
+                // Send the form data.
+                var json = JSON.stringify(Object.fromEntries(formData));
+                xhr.send(json);
+
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == XMLHttpRequest.DONE) {
+                        alert("Salvo com Sucesso!");
+                        form.reset(); //reset form after AJAX success or do something else
+                    }
+                }
+                //Fail the onsubmit to avoid page refresh.
+                return false;
+            }
+        </script>
+    </body>
+</html>

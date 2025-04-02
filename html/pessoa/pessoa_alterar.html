@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            table {
+              font-family: arial, sans-serif;
+              border-collapse: collapse;
+              width: 100%;
+            }
+
+            td, th {
+              border: 1px solid #dddddd;
+              text-align: left;
+              padding: 8px;
+            }
+
+            tr:nth-child(even) {
+              background-color: #dddddd;
+            }
+
+            footer {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <form id="myForm" action="javascript:alterarPessoa()">
+            <label for="fname">Código da pessoa:</label>
+            <input type="text" id="id_pessoa" name="id_pessoa"><br><br>
+
+            <label for="fname">Nome:</label>
+            <input type="text" id="nome" name="nome"><br><br>
+
+            <label for="lname">Sobrenome:</label>
+            <input type="text" id="sobrenome" name="sobrenome"><br><br>
+
+            <label for="lname">Idade:</label>
+            <input type="text" id="idade" name="idade"><br><br>
+
+            <label for="lname">Genero:</label>
+            <input type="text" id="genero" name="genero"><br><br>
+
+            <label for="lname">Endereco:</label>
+            <input type="text" id="endereco" name="endereco"><br><br>
+
+            <label for="lname">Telefone:</label>
+            <input type="text" id="telefone" name="telefone"><br><br>
+
+            <input type="submit" value="Alterar">
+        </form>
+
+
+        <script type="text/javascript">
+
+            function alterarPessoa() {
+
+                        alert("Pessoa alterada com sucesso!");
+
+            }
+        </script>
+    </body>
+</html>

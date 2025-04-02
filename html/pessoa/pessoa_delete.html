@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            table {
+              font-family: arial, sans-serif;
+              border-collapse: collapse;
+              width: 100%;
+            }
+
+            td, th {
+              border: 1px solid #dddddd;
+              text-align: left;
+              padding: 8px;
+            }
+
+            tr:nth-child(even) {
+              background-color: #dddddd;
+            }
+
+            footer {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <form id="myForm" action="javascript:deletarPessoa()">
+            <label for="fname">Código da pessoa:</label>
+            <input type="text" id="id_pessoa" name="id_pessoa"><br><br>
+
+            <input type="submit" value="Deletar">
+        </form>
+
+
+        <script type="text/javascript">
+
+            function deletarPessoa() {
+
+                        alert("Cadastro deletado com sucesso!");
+
+            }
+        </script>
+    </body>
+</html>

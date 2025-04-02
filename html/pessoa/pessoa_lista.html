@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            table {
+              font-family: arial, sans-serif;
+              border-collapse: collapse;
+              width: 100%;
+            }
+
+            td, th {
+              border: 1px solid #dddddd;
+              text-align: left;
+              padding: 8px;
+            }
+
+            tr:nth-child(even) {
+              background-color: #dddddd;
+            }
+
+            footer {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <script type="text/javascript">
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'http://127.0.0.1:8000/pessoas');
+            xhr.responseType = 'json';
+            xhr.onload = function(e) {
+                if (this.status == 200) {
+                    var data = this.response;
+                    var table = document.createElement('table');
+
+                    /*
+                     * Create table columns.
+                     */
+                    var tr = document.createElement('tr');
+                    var firstObject  = data[0];
+                    for (const [key, value] of Object.entries(firstObject)) {
+                        var th = document.createElement('th');
+                        th.appendChild(document.createTextNode(key));
+                        tr.appendChild(th);
+                    }
+
+                    // Add columns in the table.
+                    table.appendChild(tr);
+
+
+                    /*
+                     * Create table values.
+                     */
+                    data.forEach(function(object) {
+                        tr = document.createElement('tr');
+                        for (const [key, value] of Object.entries(object)) {
+                            var td = document.createElement('td');
+                            td.appendChild(document.createTextNode(value));
+                            tr.appendChild(td);
+                        }
+
+                        // Add values in the table.
+                        table.appendChild(tr);
+                    });
+
+                    document.body.appendChild(table);
+                }
+            };
+            xhr.send();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            table {
+              font-family: arial, sans-serif;
+              border-collapse: collapse;
+              width: 100%;
+            }
+
+            td, th {
+              border: 1px solid #dddddd;
+              text-align: left;
+              padding: 8px;
+            }
+
+            tr:nth-child(even) {
+              background-color: #dddddd;
+            }
+
+            footer {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <form id="myForm" action="javascript:alterarFilme()">
+            <label for="fname">Código do filme:</label>
+            <input type="text" id="id_filme" name="id_filme"><br><br>
+
+            <label for="fname">Título:</label>
+            <input type="text" id="titulo" name="titulo"><br><br>
+
+            <label for="lname">Ano:</label>
+            <input type="text" id="ano" name="ano"><br><br>
+
+            <label for="lname">Valor:</label>
+            <input type="text" id="valor" name="valor"><br><br>
+
+            <label for="lname">Genero:</label>
+            <input type="text" id="genero" name="genero"><br><br>
+
+            <input type="submit" value="Alterar">
+        </form>
+
+
+        <script type="text/javascript">
+
+            function alterarFilme() {
+
+                        alert("Filme alterado com sucesso!");
+
+            }
+        </script>
+    </body>
+</html>
