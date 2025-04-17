@@ -29,17 +29,50 @@
         <form id="myForm" action="javascript:buscarPessoa()">
             <label for="fname">Código da pessoa:</label>
             <input type="text" id="id_pessoa" name="id_pessoa"><br><br>
-
             <input type="submit" value="Buscar">
         </form>
 
 
         <script type="text/javascript">
-
             function buscarPessoa() {
 
-                        alert("Busca realizada!");
+                var id = document.getElementById("id_pessoa");
 
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', 'http://127.0.0.1:8000/pessoa?id_pessoa=' + id.value);
+                xhr.responseType = 'json';
+                xhr.onload = function(e) {
+
+                    var data = this.response;
+
+                    if (this.status == 200) {
+
+                        var p_name = document.createElement('p');
+                        p_name.appendChild(document.createTextNode("Nome: " + data["nome"] + " " + data["sobrenome"]));
+
+                        var p_idade = document.createElement('p');
+                        p_idade.appendChild(document.createTextNode("Idade: " + data["idade"]));
+
+                        var p_genero = document.createElement('p');
+                        p_genero.appendChild(document.createTextNode("Genero: " + data["genero"]));
+
+                        var p_endereco = document.createElement('p');
+                        p_endereco.appendChild(document.createTextNode("Endereco: " + data["endereco"]));
+
+                        var p_telefone = document.createElement('p');
+                        p_telefone.appendChild(document.createTextNode("Nome: " + data["telefone"]));
+
+                        document.body.appendChild(p_name);
+                        document.body.appendChild(p_idade);
+                        document.body.appendChild(p_genero);
+                        document.body.appendChild(p_endereco);
+                        document.body.appendChild(p_telefone);
+                        document.body.appendChild(document.createElement('hr'));
+                    } else {
+                        alert("Erro ao deletar registro! " + data["detail"]);
+                    }
+                };
+                xhr.send();
             }
         </script>
     </body>

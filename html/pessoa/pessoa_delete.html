@@ -29,17 +29,26 @@
         <form id="myForm" action="javascript:deletarPessoa()">
             <label for="fname">Código da pessoa:</label>
             <input type="text" id="id_pessoa" name="id_pessoa"><br><br>
-
             <input type="submit" value="Deletar">
         </form>
 
-
         <script type="text/javascript">
-
             function deletarPessoa() {
 
-                        alert("Cadastro deletado com sucesso!");
+                var id = document.getElementById("id_pessoa");
 
+                const xhr = new XMLHttpRequest();
+                xhr.open('DELETE', 'http://127.0.0.1:8000/pessoa?id_pessoa=' + id.value);
+                xhr.responseType = 'json';
+                xhr.onload = function(e) {
+                    if (this.status == 200) {
+                        alert("Registro deletada com sucesso! Id = " + id.value);
+                    } else {
+                        var data = this.response;
+                        alert("Erro ao deletar registro! " + data["detail"]);
+                    }
+                };
+                xhr.send();
             }
         </script>
     </body>

@@ -1,6 +1,6 @@
 import uvicorn
 from typing import List
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException, status
 from fastapi.responses import HTMLResponse
 from database import Database
 from filme import Filme
@@ -167,9 +167,12 @@ async def pessoa(id_pessoa: int):
     if pessoa_deletada:
         return "Cadastro excluído."
     else:
-        return ("Cadastro não excluído. Possíveis motivos: "
-                "a) Código de identificação não encontrado "
-                "b) Registro de pessoa incluído em uma ou mais locações não permite sua exclusão ")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cadastro não excluído. Possíveis motivos: "
+                   "a) Código de identificação não encontrado "
+                   "b) Registro de pessoa incluído em uma ou mais locações não permite sua exclusão "
+        )
 
 
 @app.delete('/filme')
