@@ -181,9 +181,12 @@ async def filme(id_filme: int):
     if filme_deletado:
         return "Filme excluído com sucesso"
     else:
-        return ("Filme não excluído. Possíveis motivos: "
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Filme não excluído. Possíveis motivos: "
                 "a) Código de identificação não encontrado"
-                "b) Registro de filme incluído em uma ou mais locações não permite sua exclusão")
+                "b) Registro de filme incluído em uma ou mais locações não permite sua exclusão"
+        )
 
 @app.delete('/locacao')
 async def locacao(id: int):

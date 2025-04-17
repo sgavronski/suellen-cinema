@@ -38,8 +38,20 @@
 
             function deletarFilme() {
 
-                        alert("Filme deletado com sucesso!");
+                var id = document.getElementById("id_filme");
 
+                const xhr = new XMLHttpRequest();
+                xhr.open('DELETE', 'http://127.0.0.1:8000/filme?id_filme=' + id.value);
+                xhr.responseType = 'json';
+                xhr.onload = function(e) {
+                    if (this.status == 200) {
+                        alert("Registro deletado com sucesso! Id = " + id.value);
+                    } else {
+                        var data = this.response;
+                        alert("Erro ao deletar registro! " + data["detail"]);
+                    }
+                };
+                xhr.send();
             }
         </script>
     </body>

@@ -29,7 +29,6 @@
         <form id="myForm" action="javascript:buscarFilme()">
             <label for="fname">Código do filme:</label>
             <input type="text" id="id_filme" name="id_filme"><br><br>
-
             <input type="submit" value="Buscar">
         </form>
 
@@ -38,8 +37,39 @@
 
             function buscarFilme() {
 
-                        alert("Busca realizada!");
+                var id = document.getElementById("id_filme");
 
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', 'http://127.0.0.1:8000/filme?id_filme=' + id.value);
+                xhr.responseType = 'json';
+                xhr.onload = function(e) {
+
+                    var data = this.response;
+
+                    if (this.status == 200) {
+
+                        var p_titulo = document.createElement('p');
+                        p_titulo.appendChild(document.createTextNode("Título: " + data["titulo"]));
+
+                        var p_ano = document.createElement('p');
+                        p_ano.appendChild(document.createTextNode("Ano: " + data["ano"]));
+
+                        var p_genero = document.createElement('p');
+                        p_genero.appendChild(document.createTextNode("Genero: " + data["genero"]));
+
+                        var p_valor = document.createElement('p');
+                        p_valor.appendChild(document.createTextNode("Valor: " + data["valor"]));
+
+                        document.body.appendChild(p_titulo);
+                        document.body.appendChild(p_ano);
+                        document.body.appendChild(p_genero);
+                        document.body.appendChild(p_valor);
+                        document.body.appendChild(document.createElement('hr'));
+                    } else {
+                        alert("Erro ao buscar registro! " + data["detail"]);
+                    }
+                };
+                xhr.send();
             }
         </script>
     </body>
